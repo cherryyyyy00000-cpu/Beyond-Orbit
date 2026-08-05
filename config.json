@@ -138,7 +138,17 @@
     "require_public_domain": true,
     "filter_relevance": true,
     "allow_pexels_filler": false,
+    "always_include_queries": [
+      "earth from space station",
+      "iss earth observation",
+      "aurora from orbit",
+      "earth at night city lights",
+      "earth limb sunrise orbit"
+    ],
+    "always_include_count": 4,
     "fallback_queries": [
+      "international space station earth view",
+      "earth from orbit timelapse",
       "hubble space telescope image",
       "james webb space telescope image",
       "nebula",

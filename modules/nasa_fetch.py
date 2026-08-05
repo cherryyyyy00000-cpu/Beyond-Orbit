@@ -674,6 +674,15 @@ def _fetch_assets_inner(queries: Sequence[str], want: Optional[int],
         # confirmed against a documented endpoint we do not download from it,
         # so nothing is appended. images-api below covers a lot of SVS material.
 
+    # Reserve slots for orbital footage that is always mixed in, so no video is
+    # wall-to-wall abstract astronomy. Views of Earth from the ISS are both the
+    # most abundant real footage NASA has and the most watchable — slow, real,
+    # and genuinely satisfying in a way a black-hole illustration is not.
+    always = [str(q) for q in (cfg("nasa.always_include_queries", []) or [])]
+    reserved = min(int(cfg("nasa.always_include_count", 0) or 0),
+                   max(0, want - 2)) if always else 0
+    topic_budget = max(1, want - reserved)
+
     # --- images-api.nasa.gov: the workhorse.
     if "images_api" in sources or not sources:
         # Interleave video and stills: motion holds attention, stills are sharper.
@@ -684,12 +693,12 @@ def _fetch_assets_inner(queries: Sequence[str], want: Optional[int],
             plan.append((q, False))
 
         for query, want_video in plan:
-            if len(assets) >= want:
+            if len(assets) >= topic_budget:
                 break
             candidates = _search_images_api(query, want_video, limit=want)
             random.shuffle(candidates)
             for item in candidates:
-                if len(assets) >= want:
+                if len(assets) >= topic_budget:
                     break
                 if item["nasa_id"] in seen_ids:
                     continue
@@ -700,6 +709,32 @@ def _fetch_assets_inner(queries: Sequence[str], want: Optional[int],
                     log.info("  [%d/%d] %s %s (%dx%d) — %s",
                              len(assets), want, got.kind, got.asset_id,
                              got.width, got.height, got.credit)
+
+    # --- Always mix in real orbital footage, whatever the topic.
+    if always and len(assets) < want:
+        log.info("Adding orbital footage (Earth from the ISS) — %d slot(s).",
+                 want - len(assets))
+        random.shuffle(always)
+        for query in always:
+            if len(assets) >= want:
+                break
+            # Prefer video here: a slow real shot of Earth turning is the whole
+            # point, and a still cannot carry it.
+            for want_video in ((True, False) if prefer_video else (False,)):
+                if len(assets) >= want:
+                    break
+                for item in _search_images_api(query, want_video, limit=want):
+                    if len(assets) >= want:
+                        break
+                    if item["nasa_id"] in seen_ids:
+                        continue
+                    seen_ids.add(item["nasa_id"])
+                    got = _download_images_api_item(item, dest_dir, query)
+                    if got:
+                        assets.append(got)
+                        log.info("  [%d/%d] %s %s (%dx%d) — %s",
+                                 len(assets), want, got.kind, got.asset_id,
+                                 got.width, got.height, got.credit)
 
     # --- Broaden to high-yield NASA queries before giving up.
     #

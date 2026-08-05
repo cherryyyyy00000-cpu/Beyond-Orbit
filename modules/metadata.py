@@ -79,6 +79,8 @@ _HOOK_STOPWORDS = {
 _BAD_ENDINGS = _HOOK_STOPWORDS | {
     "than", "when", "where", "what", "how", "why", "into", "onto", "about",
     "refuse", "refuses", "made", "goes", "being", "makes", "came", "does",
+    "like", "such", "just", "even", "only", "very", "more", "most", "actually",
+    "looks", "look", "seen", "seem", "seems", "after", "before", "over",
 }
 
 # ...and one that STARTS on one of these dangles.
@@ -87,6 +89,7 @@ _BAD_OPENINGS = {
     "with", "from", "for", "is", "are", "was", "were", "be", "been",
     "has", "had", "have", "which", "who", "whose", "its", "their", "it",
     "also", "then", "there", "here",
+    "like", "such", "actually", "looks", "look", "just", "even", "only", "very",
 }
 
 
