@@ -136,6 +136,7 @@
     "prefer_video": true,
     "min_image_width": 2560,
     "max_assets_per_video": 14,
+    "video_comment": "prefer_video=true runs ALL video searches before any still search, rather than interleaving them per query — interleaving filled the asset budget with photographs before most video searches had even run, which made videos look like slow zooms on stills instead of real footage. min_video_assets=4 does not force anything (NASA simply has far more stills than video); it logs a loud warning when the target is missed so the cause is visible rather than silent. modules/nasa_fetch.py also walks several file variants per asset (medium, large, orig, small) instead of betting on one, because dropping an asset when its first video file exceeded the size cap was itself a major source of stills-only videos.",
     "sources": ["images_api"],
     "svs_base": "https://svs.gsfc.nasa.gov",
     "images_api": "https://images-api.nasa.gov/search",
@@ -143,6 +144,7 @@
     "require_public_domain": true,
     "filter_relevance": true,
     "allow_pexels_filler": false,
+    "min_video_assets": 4,
     "always_include_queries": [
       "earth from space station",
       "iss earth observation",
