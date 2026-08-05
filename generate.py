@@ -185,11 +185,14 @@ def produce(topic_id: Optional[str] = None, make_short: bool = True,
     # would otherwise produce only three Shorts a week, which is far too slow to
     # build subscribers.
     shorts: List[dict] = []
-    if make_short and bool(cfg("shorts.enabled", True)):
+    # shorts.count defaults to 0: Shorts now come from their own daily run
+    # (generate_shorts.py), because uploading them alongside the documentary
+    # capped the channel at ~1.7 Shorts/day on the 10,000-unit API quota.
+    want = int(cfg("shorts.count", 0))
+    if make_short and want > 0 and bool(cfg("shorts.enabled", True)):
         try:
             from modules.shorts_clipper import build_short, pick_windows
 
-            want = max(1, int(cfg("shorts.count", 1)))
             target = float(cfg("shorts.clip_seconds", 40))
             windows = pick_windows(words, target, audio_seconds, count=want)
             for i, win in enumerate(windows, start=1):

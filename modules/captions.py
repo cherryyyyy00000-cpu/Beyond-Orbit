@@ -10,7 +10,7 @@ switch it off. See ``captions.burn_in`` in config.json.
 
 **Short (.ass karaoke).** Vertical Shorts are watched muted and while scrolling,
 so here big burned-in word-by-word captions genuinely lift retention. This is the
-one place the FactVault-style treatment is correct.
+one place where baking them into the frame is the right call.
 
 Public API
 ----------
@@ -130,6 +130,9 @@ def _wrap_two_lines(text: str, max_chars: int = _SRT_MAX_CHARS // 2) -> str:
 
 def build_srt(words: Sequence[Dict], out_path) -> Optional[Path]:
     """Write an .srt caption track from word timings."""
+    if not bool(cfg("captions.enabled", True)):
+        log.info("Caption track disabled in config — skipping.")
+        return None
     if not words:
         log.warning("No word timings — skipping the caption track.")
         return None

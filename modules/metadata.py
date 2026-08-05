@@ -85,6 +85,8 @@ _BAD_ENDINGS = _HOOK_STOPWORDS | {
 _BAD_OPENINGS = {
     "and", "or", "but", "of", "to", "that", "than", "as", "so", "if", "by",
     "with", "from", "for", "is", "are", "was", "were", "be", "been",
+    "has", "had", "have", "which", "who", "whose", "its", "their", "it",
+    "also", "then", "there", "here",
 }
 
 
@@ -99,7 +101,17 @@ def _thumbnail_hook(title: str, max_words: int) -> str:
     "WHAT FELL INTO BLACK HOLE", which is broken English; taking the densest
     run of words instead gives "FELL INTO A BLACK HOLE", which still reads.
     """
-    clean = re.sub(r"[^\w\s'-]", " ", str(title)).strip()
+    # Keep separators INSIDE numbers. Stripping all punctuation turns
+    # "100,000 light years" into "100 000 LIGHT YEARS" and "13.8 billion" into
+    # "13 8 BILLION", which reads as corrupted text on a thumbnail.
+    #
+    # Order matters: allow . and , through the first pass, THEN drop the ones
+    # that are not sitting between two digits. (Using a placeholder character
+    # does not work here — any placeholder that survives \w would itself be
+    # stripped by the same character class.)
+    clean = re.sub(r"[^\w\s'\-.,]", " ", str(title))
+    clean = re.sub(r"(?<!\d)[.,]|[.,](?!\d)", " ", clean).strip()
+
     words = [w for w in clean.split() if w]
     if not words:
         return ""
@@ -220,11 +232,19 @@ def _build_description(
     if cta:
         parts.append(cta)
 
-    about = f"Beyond Orbit — {tagline}" if tagline else "Beyond Orbit"
-    parts.append(
-        f"{about}\nDeep-space documentaries built from real mission imagery and "
-        f"published research. Sources are named on screen and credited below."
-    )
+    name = str(cfg("channel.name", "Beyond Orbit")).strip()
+    handle = str(cfg("channel.handle", "")).strip()
+    about = f"{name} — {tagline}" if tagline else name
+    if handle:
+        about = f"{about}\n{handle}"
+    niche = str(cfg("channel.niche", "")).strip()
+    blurb = (niche if niche else
+             "Deep-space documentaries built from real mission imagery.")
+    contact = str(cfg("channel.contact", "")).strip()
+    about = f"{about}\n{blurb}"
+    if contact and contact.lower() != str(cfg("channel.name", "")).strip().lower():
+        about = f"{about}\n{contact}"
+    parts.append(about)
 
     attribution = _attribution_block(assets)
     if attribution:

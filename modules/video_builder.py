@@ -425,8 +425,18 @@ def build_documentary(
     out_path,
     ass_path: Optional[Path] = None,
     music_path: Optional[Path] = None,
+    size: Optional[Tuple[int, int]] = None,
+    burn_subtitles: Optional[bool] = None,
+    max_seconds: Optional[float] = None,
+    outro_seconds: Optional[float] = None,
 ) -> Optional[Path]:
-    """Render the finished documentary.
+    """Render a finished video.
+
+    Despite the name this renders BOTH formats. The three-pass pipeline, the
+    Ken Burns motion, the pattern-interrupt shot planning and the fallback chain
+    are identical for a 16:9 documentary and a 9:16 Short — only the frame size
+    and whether captions are burned in differ. Sharing it means a fix to the
+    renderer benefits both.
 
     Args:
         narration_path: the edge-tts MP3; its length defines the video length.
@@ -434,9 +444,14 @@ def build_documentary(
         title: used only for logging — the on-screen identity lives in the
             thumbnail and title, not burned into the frame.
         out_path: destination .mp4.
-        ass_path: subtitles to BURN IN. Normally None for long-form; a .srt
-            sidecar is uploaded separately instead.
+        ass_path: subtitles to burn in.
         music_path: optional bed; picked from assets/music if omitted.
+        size: (width, height) override. Defaults to the configured long-form
+            resolution; pass (1080, 1920) for a Short.
+        burn_subtitles: force burning on/off. Long-form defaults to
+            ``captions.burn_in`` (false — a .srt sidecar is uploaded instead),
+            but a Short must have them burned in because it is watched muted.
+        max_seconds / outro_seconds: override the long-form defaults.
 
     Returns the output path, or None if even the solid-colour fallback failed.
     """
@@ -449,12 +464,15 @@ def build_documentary(
                   "Install with: apt-get install -y ffmpeg")
         return None
 
-    W, H = resolution()
+    W, H = size if size else resolution()
+    W, H = W - W % 2, H - H % 2          # libx264 + yuv420p need even dimensions
     fps = int(cfg("video.fps", 30))
     crf = int(cfg("video.crf", 20))
     preset = str(cfg("video.preset", "fast"))
-    max_seconds = float(cfg("video.max_minutes", 20)) * 60.0
-    outro = float(cfg("video.outro_seconds", 6.0))
+    max_seconds = (float(max_seconds) if max_seconds is not None
+                   else float(cfg("video.max_minutes", 20)) * 60.0)
+    outro = (float(outro_seconds) if outro_seconds is not None
+             else float(cfg("video.outro_seconds", 6.0)))
 
     narr_dur = _duration(narration_path)
     if narr_dur <= 0:
@@ -520,7 +538,9 @@ def build_documentary(
             return None
 
         # --- Pass 3: mux audio (stream copy unless burning subtitles) -----
-        burn = ass_path if (ass_path and bool(cfg("captions.burn_in", False))) else None
+        want_burn = (bool(burn_subtitles) if burn_subtitles is not None
+                     else bool(cfg("captions.burn_in", False)))
+        burn = ass_path if (ass_path and want_burn) else None
         if burn:
             log.info("Burning subtitles in — this forces a video re-encode.")
         if music_path is None:
@@ -543,3 +563,32 @@ def build_documentary(
 
     finally:
         shutil.rmtree(work, ignore_errors=True)
+
+
+
+def build_vertical(
+    narration_path,
+    assets: Sequence,
+    title: str,
+    out_path,
+    ass_path: Optional[Path] = None,
+    max_seconds: float = 62.0,
+) -> Optional[Path]:
+    """Render a 9:16 Short using the same pipeline as the documentary.
+
+    Differences from long-form, all of which matter:
+      * frame size comes from ``shorts.width``/``shorts.height`` (1080x1920),
+      * captions are ALWAYS burned in — a Short is watched muted while scrolling,
+      * no outro tail and no music bed, because 40 seconds has no room for either.
+    """
+    W = int(cfg("shorts.width", 1080))
+    H = int(cfg("shorts.height", 1920))
+    return build_documentary(
+        narration_path, assets, title, out_path,
+        ass_path=ass_path,
+        music_path=None,
+        size=(W, H),
+        burn_subtitles=True,
+        max_seconds=max_seconds,
+        outro_seconds=0.6,
+    )

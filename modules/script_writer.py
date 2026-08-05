@@ -259,8 +259,21 @@ def _gemini_prompt(topic: Topic) -> str:
         [{"heading": b.heading, "points": b.points} for b in topic.beats],
         indent=2,
     )
-    return f"""You are the head writer for "Beyond Orbit", a faceless YouTube space
-documentary channel for a US audience. Write the narration for one video.
+    channel = str(cfg("channel.name", "Beyond Orbit"))
+    niche = str(cfg("channel.niche", "")).strip()
+    audience = str(cfg("channel.audience", "")).strip()
+    language = str(cfg("channel.language", "English (US)")).strip()
+
+    brief = f'You are the head writer for "{channel}", a faceless YouTube channel.'
+    if niche:
+        brief += f"\nCHANNEL: {niche}"
+    if audience:
+        brief += f"\nAUDIENCE: {audience}"
+    brief += f"\nLANGUAGE: {language}"
+
+    return f"""{brief}
+
+Write the narration for one video.
 
 TOPIC: {topic.title}
 ANGLE: {topic.angle}

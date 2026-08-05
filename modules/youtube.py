@@ -60,7 +60,8 @@ _DAY_INDEX = {
 # Scheduling
 # ---------------------------------------------------------------------------
 def next_short_publish_times(count: int,
-                             now: Optional[dt.datetime] = None) -> List[Optional[str]]:
+                             now: Optional[dt.datetime] = None,
+                             first_immediate: bool = True) -> List[Optional[str]]:
     """Publish slots for the Shorts cut from one documentary.
 
     Shorts are all UPLOADED in the same run (that is where the API quota goes),
@@ -72,8 +73,14 @@ def next_short_publish_times(count: int,
     published its Shorts at 10 AM ET — nowhere near a peak. This walks real
     clock slots instead.
 
-    Returns a list of RFC3339 UTC strings, with ``None`` in the first position
-    meaning "publish immediately".
+    Args:
+        count: how many slots are needed.
+        now: override the clock (for testing).
+        first_immediate: when True the first Short publishes right away. The
+            daily Shorts run sets this False so all three land on real peak
+            windows instead of one going out at whatever time the runner woke up.
+
+    Returns a list of RFC3339 UTC strings; ``None`` means "publish immediately".
     """
     count = max(0, int(count))
     if count == 0:
@@ -90,14 +97,14 @@ def next_short_publish_times(count: int,
     # A 40-second vertical clip processes fast, so a short lead is enough.
     earliest = now_et + dt.timedelta(minutes=45)
 
-    slots: List[Optional[str]] = [None]  # the first Short goes out immediately
-    found = 0
+    slots: List[Optional[str]] = [None] if first_immediate else []
+    need = count - len(slots)
     for day_offset in range(0, 21):
-        if found >= count - 1:
+        if need <= 0:
             break
         day = now_et.date() + dt.timedelta(days=day_offset)
         for hour in sorted(float(h) for h in hours):
-            if found >= count - 1:
+            if need <= 0:
                 break
             h, m = int(hour), int(round((hour - int(hour)) * 60))
             slot = dt.datetime.combine(day, dt.time(hour=h, minute=m), tzinfo=eastern)
@@ -105,7 +112,7 @@ def next_short_publish_times(count: int,
                 continue
             slots.append(slot.astimezone(dt.timezone.utc)
                          .strftime("%Y-%m-%dT%H:%M:%SZ"))
-            found += 1
+            need -= 1
 
     while len(slots) < count:      # ran out of slots — publish those now
         slots.append(None)
@@ -364,7 +371,10 @@ def upload_video(
     if thumbnail_path:
         set_thumbnail(video_id, thumbnail_path, service=service)
     if caption_path:
-        upload_caption(video_id, caption_path, service=service)
+        # Derive the BCP-47 code from channel.language, e.g. "English (US)" -> "en".
+        lang = str(cfg("channel.language", "English (US)")).strip().lower()
+        code = "en" if lang.startswith("english") else (lang[:2] or "en")
+        upload_caption(video_id, caption_path, language=code, service=service)
     return video_id
 
 

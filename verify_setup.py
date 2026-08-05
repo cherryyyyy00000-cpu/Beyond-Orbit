@@ -328,11 +328,13 @@ def check_youtube() -> Tuple[bool, Optional[str]]:
 
     # --- Quota -------------------------------------------------------------
     header("6. Quota")
-    info("A video upload costs 1,600 units; the default daily quota is 10,000")
-    info("-> about 6 uploads per day for this Cloud project")
-    info("Beyond Orbit posts 3 long-form + up to 2 Shorts per day at most,")
-    info("so it fits — but give FactVault its OWN Cloud project, otherwise the")
-    info("two channels share the same 10,000 units.")
+    info("Daily quota is 10,000 units. videos.insert costs 1,600,")
+    info("captions.insert 400, thumbnails.set 50.")
+    info("Beyond Orbit's schedule:")
+    info("  documentary day  2,050 + 3 x 1,600 = 6,850 units")
+    info("  Shorts-only day          3 x 1,600 = 4,800 units")
+    info("Both fit. But quota is per CLOUD PROJECT, not per channel — if another")
+    info("channel's automation shares this project, they share the 10,000 units.")
     return True, channel_title
 
 
