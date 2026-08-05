@@ -112,8 +112,8 @@
 
   "shorts": {
     "enabled": true,
-    "count": 3,
-    "stagger_days": 1,
+    "count": 4,
+    "publish_hours_et": [12, 19],
     "width": 1080,
     "height": 1920,
     "clip_seconds": 40,
@@ -123,7 +123,7 @@
     "captions_highlight_active_word": true,
     "cta_text": "FULL STORY ON THE CHANNEL",
     "title_suffix": "#shorts #space #universe",
-    "comment": "Each documentary is auto-clipped into 'count' vertical Shorts. The highest-scoring NON-OVERLAPPING ~40s windows are picked from the narration word timings (sentence-aligned, outro excluded), cropped to 1080x1920, and given big burned-in karaoke captions. count=3 matters: at 3 long-form uploads a week, one Short each would only be 3 Shorts a week, which is far too slow to build subscribers — 3 each gives roughly daily Shorts from the same single render. stagger_days=1 spreads them over consecutive days via publishAt so they do not all land at once. Division of labour: the Shorts are the DISCOVERY engine (subs), the long-form is the WATCH-HOURS engine. Shorts feed watch time does NOT count toward the 4,000-hour threshold, which is precisely why the long-form exists."
+    "comment": "Each documentary is auto-clipped into 'count' vertical Shorts: the highest-scoring NON-OVERLAPPING ~40s windows from the narration word timings (sentence-aligned, outro excluded), cropped to 1080x1920 with burned-in karaoke captions. WHY count=4 AND NOT MORE — this is a hard YouTube API quota ceiling, not a preference. The daily quota is 10,000 units; videos.insert costs 1,600, captions.insert 400, thumbnails.set 50. One documentary is 2,050 units, so 4 Shorts = 2,050 + 6,400 = 8,450 (safe, with headroom for a retry) but 5 Shorts = 10,050 and the last upload FAILS. Note that staggered publishing does not spread the quota: every Short is UPLOADED in the same run, only the publish time is deferred. At 3 documentaries a week that is 12 Shorts a week, about 1.7 per day. publish_hours_et [12, 19] = noon and 7 PM Eastern, the two US Shorts peaks; the first Short of each batch publishes immediately and the rest fill the next peak slots. Division of labour: Shorts are the DISCOVERY engine (subscribers), long-form is the WATCH-HOURS engine, because Shorts feed watch time does NOT count toward the 4,000-hour threshold."
   },
 
   "nasa": {

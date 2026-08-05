@@ -78,6 +78,25 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     from modules import youtube
 
+    # --- Quota guard ------------------------------------------------------
+    # The daily YouTube quota is 10,000 units and a video upload alone costs
+    # 1,600. Warn BEFORE starting rather than having the last Short of the batch
+    # die with quotaExceeded halfway through.
+    planned = 0
+    for v in pending:
+        planned += 1600 + (400 if v.get("caption_path") else 0) \
+            + (50 if v.get("thumbnail_path") else 0)
+        if not args.no_short:
+            planned += 1600 * len(v.get("shorts") or [])
+    log.info("Estimated API cost this run: %d units (daily quota 10,000).", planned)
+    if planned > 10000:
+        log.warning(
+            "This run is planned to cost %d units, over the 10,000 daily quota — "
+            "the later uploads will fail with quotaExceeded. Lower shorts.count "
+            "in config.json, or use --limit to split the batch across days.",
+            planned,
+        )
+
     try:
         service = youtube.build_service()
     except Exception as exc:  # noqa: BLE001
@@ -132,7 +151,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             from modules.topic_source import get_topic_by_id
 
             topic = get_topic_by_id(entry.get("topic_id", ""))
-            stagger = float(cfg("shorts.stagger_days", 1))
+            # Real peak-time slots rather than "run time + an hour".
+            slots = ([None] * len(shorts) if args.now
+                     else youtube.next_short_publish_times(len(shorts)))
             posted_n = 0
 
             for i, short in enumerate(shorts):
@@ -152,13 +173,9 @@ def main(argv: Optional[List[str]] = None) -> int:
                 if len(shorts) > 1:
                     s_title = f"{s_title} ({i + 1}/{len(shorts)})"[:100]
 
-                # The first Short goes out now; the rest are spread over the
-                # following days so they do not all land at once.
-                s_publish = None
-                if i > 0 and stagger > 0 and not args.now:
-                    when = (_dt.datetime.now(_dt.timezone.utc)
-                            + _dt.timedelta(days=stagger * i, hours=1))
-                    s_publish = when.strftime("%Y-%m-%dT%H:%M:%SZ")
+                # First Short goes out immediately; the rest land on the next
+                # peak windows (shorts.publish_hours_et).
+                s_publish = slots[i] if i < len(slots) else None
 
                 short_id = youtube.upload_video(
                     sp,

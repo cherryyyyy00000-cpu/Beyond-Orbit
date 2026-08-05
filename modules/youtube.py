@@ -59,6 +59,62 @@ _DAY_INDEX = {
 # ---------------------------------------------------------------------------
 # Scheduling
 # ---------------------------------------------------------------------------
+def next_short_publish_times(count: int,
+                             now: Optional[dt.datetime] = None) -> List[Optional[str]]:
+    """Publish slots for the Shorts cut from one documentary.
+
+    Shorts are all UPLOADED in the same run (that is where the API quota goes),
+    but they should not all go live at once. This spreads them across the
+    upcoming peak windows in ``shorts.publish_hours_et`` — US Shorts traffic
+    peaks around lunchtime and again in the evening.
+
+    An earlier version used ``now + i days + 1 hour``, which meant a 9 AM ET run
+    published its Shorts at 10 AM ET — nowhere near a peak. This walks real
+    clock slots instead.
+
+    Returns a list of RFC3339 UTC strings, with ``None`` in the first position
+    meaning "publish immediately".
+    """
+    count = max(0, int(count))
+    if count == 0:
+        return []
+
+    hours = cfg("shorts.publish_hours_et", [12, 19]) or [12, 19]
+    try:
+        from zoneinfo import ZoneInfo
+        eastern = ZoneInfo("America/New_York")
+    except Exception:  # noqa: BLE001
+        return [None] * count
+
+    now_et = (now or dt.datetime.now(dt.timezone.utc)).astimezone(eastern)
+    # A 40-second vertical clip processes fast, so a short lead is enough.
+    earliest = now_et + dt.timedelta(minutes=45)
+
+    slots: List[Optional[str]] = [None]  # the first Short goes out immediately
+    found = 0
+    for day_offset in range(0, 21):
+        if found >= count - 1:
+            break
+        day = now_et.date() + dt.timedelta(days=day_offset)
+        for hour in sorted(float(h) for h in hours):
+            if found >= count - 1:
+                break
+            h, m = int(hour), int(round((hour - int(hour)) * 60))
+            slot = dt.datetime.combine(day, dt.time(hour=h, minute=m), tzinfo=eastern)
+            if slot < earliest:
+                continue
+            slots.append(slot.astimezone(dt.timezone.utc)
+                         .strftime("%Y-%m-%dT%H:%M:%SZ"))
+            found += 1
+
+    while len(slots) < count:      # ran out of slots — publish those now
+        slots.append(None)
+
+    log.info("Short publish slots: %s",
+             ", ".join("now" if s is None else s for s in slots[:count]))
+    return slots[:count]
+
+
 def next_publish_time(now: Optional[dt.datetime] = None) -> Optional[str]:
     """Next publish slot as an RFC3339 UTC timestamp, or None if disabled.
 
