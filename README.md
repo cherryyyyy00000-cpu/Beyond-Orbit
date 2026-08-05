@@ -145,8 +145,14 @@ System packages: `sudo apt-get install -y ffmpeg fonts-dejavu-core`.
 ### Automation
 
 `.github/workflows/documentary.yml` runs at ~9 AM ET on **Thursday, Friday and
-Saturday**, and there is a manual **Run workflow** button with a preview mode
-that builds a downloadable artifact without posting anything.
+Saturday** and uploads straight to YouTube. The manual **Run workflow** button
+does the same; pass `upload: false` only if you specifically want a downloadable
+artifact instead of a real upload.
+
+Uploading directly is safe because of how the publish is scheduled: the video
+goes up **private** and only becomes public at 2 PM ET. That gives you a
+five-hour window to open it in YouTube Studio and delete or fix it before anyone
+sees it — a review step without having to wait on an artifact.
 
 ---
 
