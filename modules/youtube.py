@@ -442,6 +442,66 @@ def upload_caption(video_id: str, srt_path, language: str = "en",
         return False
 
 
+def ensure_playlist(title: str, description: str = "", service=None) -> Optional[str]:
+    """Find or create a playlist, returning its id.
+
+    Playlists are the cheapest watch-time lever available. A viewer who finishes a
+    video inside a playlist is auto-advanced to the next one, so session time
+    compounds instead of ending — and session time is what the algorithm actually
+    rewards. Beyond Orbit had none.
+
+    Costs 1 unit to look up and 50 to create, against a 10,000 daily budget.
+    """
+    if not title:
+        return None
+    try:
+        service = service or build_service()
+        # Look for it first so a run never creates duplicates.
+        req = service.playlists().list(part="snippet", mine=True, maxResults=50)
+        while req is not None:
+            resp = req.execute()
+            for item in resp.get("items", []):
+                if item["snippet"]["title"].strip().lower() == title.strip().lower():
+                    return item["id"]
+            req = service.playlists().list_next(req, resp)
+
+        created = service.playlists().insert(
+            part="snippet,status",
+            body={
+                "snippet": {"title": title[:150],
+                            "description": description[:5000],
+                            "defaultLanguage": "en"},
+                "status": {"privacyStatus": "public"},
+            },
+        ).execute()
+        log.info("Created playlist %r (%s)", title, created["id"])
+        return created["id"]
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Could not find or create the playlist %r: %s",
+                    title, str(exc)[:200])
+        log.warning("Playlist operations need the youtube.force-ssl scope.")
+        return None
+
+
+def add_to_playlist(playlist_id: str, video_id: str, service=None) -> bool:
+    """Append a video to a playlist. Best-effort; never fails an upload."""
+    if not (playlist_id and video_id):
+        return False
+    try:
+        service = service or build_service()
+        service.playlistItems().insert(
+            part="snippet",
+            body={"snippet": {"playlistId": playlist_id,
+                              "resourceId": {"kind": "youtube#video",
+                                             "videoId": video_id}}},
+        ).execute()
+        log.info("Added %s to playlist %s", video_id, playlist_id)
+        return True
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Could not add %s to the playlist: %s", video_id, str(exc)[:200])
+        return False
+
+
 def get_my_channel(service=None) -> Optional[dict]:
     """Return the channel this token controls — used by verify_setup.py."""
     try:
