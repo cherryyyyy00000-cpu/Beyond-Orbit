@@ -41,6 +41,7 @@ import json
 import random
 import re
 import urllib.parse
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence
@@ -152,8 +153,10 @@ def _get_json(url: str, params: Optional[Dict] = None,
         return None
 
     try:  # urllib fallback
-        import urllib.request
-
+        # NOTE: urllib.request is imported at MODULE level on purpose. Importing
+        # it here instead made `urllib` a local name for this whole function,
+        # so the urllib.parse.urlencode() call above raised UnboundLocalError
+        # before the import ever ran — which broke every NASA fetch.
         req = urllib.request.Request(url, headers=hdrs)
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read().decode("utf-8", errors="replace"))
