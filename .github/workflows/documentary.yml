@@ -81,6 +81,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          # Caches the pip download/wheel cache between runs.
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       # Decide whether THIS scheduled run is inside a real posting window.
       # Manual runs always proceed and never touch the state file.
@@ -151,17 +154,29 @@ jobs:
           emit(True, "slot_0900", f"claimed `slot_0900` for {today} at {now:%H:%M %Z}")
           PY
 
-      - name: Install system dependencies
+      # The hosted runner image often already ships ffmpeg and the DejaVu fonts.
+      # apt-get update alone costs 20-90s, so only pay it when something is
+      # genuinely missing.
+      - name: Install system dependencies (only if missing)
         if: steps.gate.outputs.proceed == 'true'
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          need=""
+          command -v ffmpeg  >/dev/null 2>&1 || need="$need ffmpeg"
+          command -v ffprobe >/dev/null 2>&1 || need="$need ffmpeg"
+          ls /usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf >/dev/null 2>&1 \
+            || need="$need fonts-dejavu-core"
+          if [ -n "$need" ]; then
+            echo "installing:$need"
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq $(echo "$need" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+          else
+            echo "ffmpeg, ffprobe and DejaVu fonts already present — skipping apt."
+          fi
+          ffmpeg -version | head -1
 
       - name: Install Python dependencies
         if: steps.gate.outputs.proceed == 'true'
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: pip install -q -r requirements.txt
 
       - name: Verify setup (diagnostic, non-blocking)
         if: steps.gate.outputs.proceed == 'true'

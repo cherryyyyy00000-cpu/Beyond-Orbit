@@ -40,6 +40,7 @@ import os
 import random
 import shutil
 import subprocess
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -262,13 +263,34 @@ def _video_filter(W: int, H: int, fps: int) -> str:
             f"crop={W}:{H},fps={fps},{_grade_filter()},setsar=1")
 
 
-def _encode_args(crf: int, preset: str, fps: int) -> List[str]:
+def _render_workers() -> int:
+    """How many shots to encode at once.
+
+    Encoding ~130 short, independent segments is embarrassingly parallel, while a
+    single 1440p libx264 stream does not scale past a couple of threads. Running
+    several ffmpeg processes side by side therefore uses a 4-vCPU runner far
+    better than doing them one at a time — which is where most of the render wall
+    time was going.
+    """
+    configured = int(cfg("video.render_workers", 0) or 0)
+    if configured > 0:
+        return configured
+    return max(1, min(4, (os.cpu_count() or 2)))
+
+
+def _threads_per_worker(workers: int) -> int:
+    """Threads to give each ffmpeg so the workers do not fight each other."""
+    return max(1, (os.cpu_count() or 2) // max(1, workers))
+
+
+def _encode_args(crf: int, preset: str, fps: int, threads: int = 0) -> List[str]:
     """Encoder settings shared by EVERY segment.
 
     They must be byte-for-byte identical across segments, otherwise the concat
-    demuxer's stream copy in pass 2 produces a broken file.
+    demuxer's stream copy in pass 2 produces a broken file. (``-threads`` does not
+    affect the bitstream's compatibility for concat purposes.)
     """
-    return [
+    args = [
         "-an",
         "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
         "-pix_fmt", "yuv420p", "-profile:v", "high",
@@ -276,11 +298,15 @@ def _encode_args(crf: int, preset: str, fps: int) -> List[str]:
         "-sc_threshold", "0",
         "-video_track_timescale", "90000",
     ]
+    if threads > 0:
+        args += ["-threads", str(threads)]
+    return args
 
 
 def _render_shot(shot: Shot, index: int, W: int, H: int, fps: int,
                  crf: int, preset: str, work: Path,
-                 overlay_png: Optional[Path] = None) -> Optional[Path]:
+                 overlay_png: Optional[Path] = None,
+                 threads: int = 0) -> Optional[Path]:
     """Render one shot to a normalised, audio-free segment.
 
     ``overlay_png`` composites a transparent PNG over the shot — used for the end
@@ -311,7 +337,7 @@ def _render_shot(shot: Shot, index: int, W: int, H: int, fps: int,
         cmd += ["-vf", vf]
 
     cmd += ["-t", f"{shot.duration:.2f}"]
-    cmd += _encode_args(crf, preset, fps)
+    cmd += _encode_args(crf, preset, fps, threads=threads)
     cmd += [str(out)]
 
     try:
@@ -640,15 +666,51 @@ def build_documentary(
                 log.info("End card over the final %d shot(s) (~%.0fs).",
                          len(shots) - end_from_index, acc)
 
-        # --- Pass 1: encode each shot -------------------------------------
-        segments: List[Path] = []
-        for i, shot in enumerate(shots):
-            seg = _render_shot(shot, i, W, H, fps, crf, preset, work,
-                               overlay_png=(end_card if i >= end_from_index else None))
-            if seg:
-                segments.append(seg)
-            if (i + 1) % 20 == 0:
-                log.info("  encoded %d/%d shots...", i + 1, len(shots))
+        # --- Pass 1: encode each shot, IN PARALLEL ------------------------
+        # Each shot is independent, so this scales with cores. Order is restored
+        # afterwards by index, because the concat in pass 2 depends on it.
+        workers = _render_workers()
+        threads = _threads_per_worker(workers)
+        t_start = time.time()
+        log.info("Encoding %d shots with %d worker(s) x %d thread(s)...",
+                 len(shots), workers, threads)
+
+        results: Dict[int, Optional[Path]] = {}
+        if workers <= 1:
+            for i, shot in enumerate(shots):
+                results[i] = _render_shot(
+                    shot, i, W, H, fps, crf, preset, work,
+                    overlay_png=(end_card if i >= end_from_index else None),
+                    threads=threads)
+        else:
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+
+            # Threads are fine here: every worker spends its life blocked in
+            # subprocess.run, so the GIL is released the whole time.
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                futures = {
+                    pool.submit(
+                        _render_shot, shot, i, W, H, fps, crf, preset, work,
+                        (end_card if i >= end_from_index else None), threads
+                    ): i
+                    for i, shot in enumerate(shots)
+                }
+                done = 0
+                for fut in as_completed(futures):
+                    i = futures[fut]
+                    try:
+                        results[i] = fut.result()
+                    except Exception as exc:  # noqa: BLE001
+                        log.warning("Shot %d raised: %s", i, exc)
+                        results[i] = None
+                    done += 1
+                    if done % 25 == 0:
+                        log.info("  encoded %d/%d shots...", done, len(shots))
+
+        segments = [results[i] for i in sorted(results) if results[i]]
+        elapsed = time.time() - t_start
+        log.info("Shots encoded in %.0fs (%.2fs per shot).",
+                 elapsed, elapsed / max(1, len(shots)))
 
         if not segments:
             log.error("Every shot failed to encode.")
