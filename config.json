@@ -58,7 +58,9 @@
     "crf": 20,
     "preset": "fast",
     "max_minutes": 20,
-    "outro_seconds": 6.0,
+    "outro_seconds": 14.0,
+    "end_card_seconds": 12.0,
+    "best_shot_first": true,
     "music_dir": "assets/music",
     "music_volume": 0.07,
     "shot_seconds_min": 4.0,
@@ -71,7 +73,7 @@
       "brightness": -0.01,
       "gamma": 1.0
     },
-    "comment": "1440p (2560x1440) is the DEFAULT and the recommended setting — YouTube encodes 1440p and above with the better VP9 codec, so even a viewer watching at 1080p sees a sharper picture than a 1080p upload. Set resolution='4k' for true 4K, but note free GitHub runners have NO GPU: 4K at preset='fast' takes ~45-90 min, and 4K at preset='medium' can exceed the 6-hour job limit. shot_seconds_min/max = PATTERN INTERRUPT: the visual changes every 4-8s so the viewer's brain never settles. ken_burns adds slow zoom/pan to still NASA images so they never look like a static slideshow."
+    "comment": "1440p (2560x1440) is the DEFAULT and recommended — YouTube encodes 1440p and above with the better VP9 codec, so even a viewer watching at 1080p sees a sharper picture than a 1080p upload. resolution='4k' works but free runners have NO GPU: 4K at preset='fast' takes ~45-90 min and at preset='medium' can exceed the 6-hour job limit. shot_seconds_min/max = PATTERN INTERRUPT: the visual changes every 4-8s so attention never settles. ken_burns adds slow zoom/pan to stills so NASA photographs never look like a slideshow. GROWTH SETTINGS: best_shot_first opens on the highest-resolution asset, because the first frame decides whether anyone watches at all. end_card_seconds=12 overlays a subscribe card over the final ~12s of REAL footage (not a static frame, which is where viewers leave) — YouTube end screens can only be placed in the last 5-20 seconds, so outro_seconds was raised from 6 to 14 to make that window exist. Without this the video simply stopped with no ask, which is the single biggest lever on subscriber conversion left unused."
   },
 
   "captions": {
@@ -95,6 +97,7 @@
     "width": 1280,
     "height": 720,
     "variants": 3,
+    "frame_samples": 9,
     "title_fontsize": 128,
     "title_color": "#FFFFFF",
     "accent_color": "#FFD34D",
@@ -105,13 +108,14 @@
     "saturation": 1.18,
     "contrast": 1.08,
     "vignette": true,
-    "comment": "1280x720 is the YouTube standard. max_words=5 — on a phone the thumbnail is ~120px wide, so more than 5 words is unreadable. 3 variants are generated per video (different crop/layout/hook wording) so you can pick the best; variant 1 is uploaded automatically. Space thumbnails win on SCALE CONTRAST (tiny Earth next to a huge object) since there is no face to use."
+    "comment": "1280x720 is the YouTube standard. max_words=5 — on a phone a thumbnail is about 120px wide, so more than 5 words is unreadable, and unreadable means unclicked. Space thumbnails win on SCALE CONTRAST (tiny Earth beside a huge object) since there is no face to use. frame_samples=9: rather than grabbing frames at fixed timestamps (which regularly landed on a dark or empty shot and cost click-through directly), nine candidates are sampled across the film and SCORED on luminance spread, colour saturation, edge energy and mid-brightness, then the best 'variants' are used. Variant 1 is uploaded automatically; the others are saved beside it so you can swap one in from Studio if the first underperforms."
   },
 
   "shorts": {
     "enabled": true,
     "count": 0,
     "daily_count": 3,
+    "seamless_loop": true,
     "publish_hours_et": [12, 16, 19],
     "assets_per_short": 5,
     "max_seconds": 62,
@@ -136,7 +140,28 @@
     "images_api": "https://images-api.nasa.gov/search",
     "block_keywords": ["logo", "insignia", "meatball", "seal", "emblem", "worm"],
     "require_public_domain": true,
-    "comment": "NASA content generally is NOT subject to copyright in the US — that is this channel's unfair advantage: broadcast-quality space footage with effectively zero Content ID risk. SOURCES: 'images_api' (images-api.nasa.gov) is the only source enabled by default. It needs no API key, is a documented stable endpoint, and already mirrors a large amount of SVS and JPL material. You may add 'svs' to this list, but be aware modules/nasa_fetch.py deliberately does NOT download from SVS: its JSON endpoint is not published as a versioned public API, so we do not want a silent shape change to break every render. TWO HARD RULES are enforced in nasa_fetch.py: (1) block_keywords rejects the NASA logo/insignia/meatball/worm, which may NOT be used because doing so implies NASA endorses this channel — matching is word-boundary based so 'wormhole' and 'sealed' are not false positives; (2) any asset whose metadata names a third-party rights holder (copyright, Getty, 'all rights reserved', etc.) is skipped, because some NASA pages embed licensed music or contractor footage. ESA/Hubble and ESO material is CC BY 4.0, so attribution is auto-added to the description by modules/metadata.py."
+    "filter_relevance": true,
+    "allow_pexels_filler": false,
+    "always_include_queries": [
+      "earth from space station",
+      "iss earth observation",
+      "aurora from orbit",
+      "earth at night city lights",
+      "earth limb sunrise orbit"
+    ],
+    "always_include_count": 4,
+    "fallback_queries": [
+      "international space station earth view",
+      "earth from orbit timelapse",
+      "hubble space telescope image",
+      "james webb space telescope image",
+      "nebula",
+      "galaxy",
+      "star cluster",
+      "deep field",
+      "solar system planet"
+    ],
+    "comment": "NASA content generally is NOT subject to copyright in the US — that is this channel's unfair advantage: real space imagery with effectively zero Content ID risk. SOURCE: 'images_api' (images-api.nasa.gov) only. It needs no key and is a documented stable endpoint. You may add 'svs', but nasa_fetch.py deliberately does not download from it: its JSON endpoint is not a versioned public API and a silent shape change would break every render. FOUR FILTERS are enforced: (1) block_keywords rejects the NASA logo/insignia/meatball/worm, which may NOT be used because it implies NASA endorses this channel — word-boundary matched so 'wormhole' and 'sealed' are not false positives; (2) any asset naming a third-party rights holder is skipped, since some NASA pages embed licensed music or contractor footage; (3) filter_relevance rejects institutional photos — NASA's library is an ARCHIVE, so searching 'black hole' also returns press conferences, award ceremonies, buildings, cleanrooms and mission patches, which make a documentary look like a corporate slideshow; it also requires a positive space-imagery signal; (4) min_image_width keeps low-resolution thumbnails out. IF A NICHE QUERY RETURNS TOO LITTLE, fallback_queries are tried next — these reliably return spectacular real imagery, and a genuine Hubble nebula in a black-hole Short is still real space. allow_pexels_filler is FALSE on purpose: Pexels has no real astronomy imagery, so 'black hole' there returns sci-fi renders and neon abstracts, which is exactly what made early Shorts look fake. ESA/Hubble and ESO material is CC BY 4.0, so attribution is auto-added by modules/metadata.py."
   },
 
   "youtube": {
@@ -165,6 +190,8 @@
       "james webb space telescope"
     ],
     "title_hashtags": ["#space", "#universe", "#nasa"],
+    "playlist_title": "Beyond Orbit — Space Documentaries",
+    "playlist_description": "Deep-space documentaries built from real NASA and ESA mission imagery. A new one every week.",
     "comment": "category_id 28 = Science & Technology. TIMING: publish at 2:00 PM ET on Thu/Fri/Sat — that single slot catches the US after-school/after-work window, the 7-11 PM ET evening peak, AND the next morning. CRITICAL: upload_lead_hours=5 means the file is uploaded 5 hours BEFORE publish time as PRIVATE with status.publishAt set. Without this a 1440p/4K video goes live while YouTube is still processing, so the first hour — the single most important hour for the algorithm — is served at 360p. title_hashtags: only the FIRST 3 hashtags render above the title, so we pick deliberately."
   }
 }

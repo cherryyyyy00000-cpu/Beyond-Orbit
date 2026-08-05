@@ -161,8 +161,19 @@ def produce(topic_id: Optional[str] = None, make_short: bool = True,
     # --- 7. render -------------------------------------------------------
     from modules import video_builder
 
+    # Tease the next topic on the end card — a concrete "next" is far better at
+    # holding a session than a generic "thanks for watching".
+    next_teaser = ""
+    try:
+        upcoming = get_next_topic(used_ids | {topic.id})
+        if upcoming:
+            next_teaser = upcoming.title
+    except Exception:  # noqa: BLE001
+        pass
+
     video_path = video_builder.build_documentary(
         audio_path, assets, topic.title, OUTPUT_DIR / f"{base}.mp4",
+        next_teaser=next_teaser,
     )
     if not video_path:
         log.error("Render failed for %s.", topic.id)

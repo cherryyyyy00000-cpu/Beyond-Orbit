@@ -88,6 +88,48 @@ def _grab_frame(video: Path, at_seconds: float, out_png: Path,
     return None
 
 
+def _score_frame(path: Path) -> float:
+    """How visually striking a frame is. Higher is better.
+
+    Sampling at fixed timestamps regularly landed on a dark or near-empty frame,
+    which costs click-through directly. Scoring instead lets the best frame in the
+    film become the thumbnail:
+
+      * luminance spread  — flat or near-black frames score badly
+      * colour saturation — a vivid nebula beats grey dust
+      * edge energy       — structure and detail beat empty sky
+      * a mid-brightness  bonus, since text has to remain readable over it
+    """
+    try:
+        from PIL import Image, ImageFilter, ImageStat
+
+        with Image.open(path) as im:
+            small = im.convert("RGB").resize((256, 144))
+
+        lum = small.convert("L")
+        lum_stat = ImageStat.Stat(lum)
+        spread = lum_stat.stddev[0] / 64.0
+        mean = lum_stat.mean[0]
+
+        sat_stat = ImageStat.Stat(small.convert("HSV").split()[1])
+        saturation = sat_stat.mean[0] / 128.0
+
+        edges = ImageStat.Stat(lum.filter(ImageFilter.FIND_EDGES)).mean[0] / 32.0
+
+        # Penalise frames that are nearly black or blown out — both make text
+        # unreadable and look like a mistake.
+        if mean < 18:
+            brightness = -1.5
+        elif mean > 210:
+            brightness = -0.8
+        else:
+            brightness = 1.0 - abs(mean - 95) / 140.0
+
+        return spread + saturation + edges + brightness
+    except Exception:  # noqa: BLE001
+        return 0.0
+
+
 def _wrap_to_width(draw, text: str, font, max_width: int) -> List[str]:
     words = text.split()
     lines, cur = [], ""
@@ -309,24 +351,38 @@ def generate_thumbnails(
         log.warning("Could not read the video duration for thumbnail frames.")
         return []
 
-    # Sample from different parts of the film so the variants do not all show the
-    # same shot. Avoid the very start and very end.
-    rng = random.Random(f"beyond-orbit-thumb::{stem}")
-    fractions = [0.18, 0.42, 0.68, 0.30, 0.55][:variants]
-    rng.shuffle(fractions)
+    # Sample widely, then KEEP THE BEST frames rather than trusting fixed
+    # timestamps — those regularly landed on a dark or empty shot.
+    sample_count = max(variants, int(cfg("thumbnail.frame_samples", 9)))
+    fractions = [0.10 + (0.78 * i / max(1, sample_count - 1))
+                 for i in range(sample_count)]
 
-    made: List[Path] = []
-    for i in range(variants):
-        frac = fractions[i % len(fractions)]
+    scored: List[tuple] = []
+    for i, frac in enumerate(fractions):
         at = max(1.0, min(duration * frac, duration - 1.0))
-        frame = out_dir / f"{stem}_frame{i + 1}.png"
+        frame = out_dir / f"{stem}_cand{i}.png"
         if not _grab_frame(video_path, at, frame, W, H):
             continue
+        scored.append((_score_frame(frame), at, frame))
+
+    if not scored:
+        log.warning("No frames could be extracted for thumbnails.")
+        return []
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    log.info("Scored %d candidate frame(s); best %.2f at %.0fs, worst %.2f.",
+             len(scored), scored[0][0], scored[0][1], scored[-1][0])
+
+    made: List[Path] = []
+    for i, (score, at, frame) in enumerate(scored[:variants]):
         out_jpg = out_dir / f"{stem}_thumb{i + 1}.jpg"
         result = _compose(frame, hook, out_jpg, layouts[i % len(layouts)])
-        frame.unlink(missing_ok=True)
         if result:
             made.append(result)
+            log.info("  variant %d from %.0fs (score %.2f, layout %s)",
+                     i + 1, at, score, layouts[i % len(layouts)])
+    for _, _, frame in scored:
+        frame.unlink(missing_ok=True)
 
     if made:
         log.info("Generated %d thumbnail variant(s); uploading %s.",

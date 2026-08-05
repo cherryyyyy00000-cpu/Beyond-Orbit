@@ -140,6 +140,21 @@ def main(argv: Optional[List[str]] = None) -> int:
         uploaded += 1
         save_manifest(manifest)  # persist after each success
 
+        # --- Playlist: the cheapest watch-time lever there is --------------
+        # A viewer who finishes a video inside a playlist is auto-advanced to the
+        # next one, so session time compounds rather than ending.
+        pl_title = str(cfg("youtube.playlist_title", "")).strip()
+        if pl_title:
+            pid = youtube.ensure_playlist(
+                pl_title,
+                str(cfg("youtube.playlist_description", "")).strip(),
+                service=service,
+            )
+            if pid:
+                youtube.add_to_playlist(pid, vid, service=service)
+                entry["playlist_id"] = pid
+                save_manifest(manifest)
+
         # --- the Shorts, each linking back to the documentary -------------
         shorts = entry.get("shorts") or []
         if args.no_short or not shorts:

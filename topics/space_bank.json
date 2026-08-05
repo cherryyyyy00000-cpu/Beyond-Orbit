@@ -2584,6 +2584,269 @@
       ],
       "visual_queries": ["dying star", "white dwarf", "black hole evaporation", "empty space stars", "red dwarf star"],
       "tags": ["heat death", "degenerate era", "black hole evaporation", "deep time", "fate of the universe"]
+    },
+    {
+      "id": "t051",
+      "title": "What Earth Actually Looks Like From the Space Station",
+      "angle": "scale",
+      "hook": "There are people four hundred kilometres above you right now, watching the planet turn. They see a sunrise every forty-five minutes.",
+      "promise": "What the view is actually like, why it never gets old, and the one thing every astronaut says changes them.",
+      "beats": [
+        {
+          "heading": "Four hundred kilometres up",
+          "points": [
+            "The International Space Station orbits roughly 400 kilometres above the surface.",
+            "That is close enough that Earth fills the window rather than looking like a globe.",
+            "You do not see the whole planet at once. You see coastlines, storms and mountain ranges sliding past."
+          ]
+        },
+        {
+          "heading": "Sixteen sunrises a day",
+          "points": [
+            "The station circles the planet in about ninety minutes, travelling near 7.7 kilometres per second.",
+            "That means a sunrise and a sunset roughly every forty-five minutes.",
+            "Crews see about sixteen of each in every twenty-four hours."
+          ]
+        },
+        {
+          "heading": "The thin blue line",
+          "points": [
+            "At the horizon the atmosphere shows up as a startlingly thin band of blue.",
+            "Almost all of the air that keeps us alive sits within the first few kilometres.",
+            "From orbit it looks less like a sky and more like a coat of paint."
+          ]
+        },
+        {
+          "heading": "The night side",
+          "points": [
+            "On the dark half of each orbit the continents light up as networks of cities.",
+            "Coastlines and river valleys trace themselves in orange and white.",
+            "Lightning storms flicker under the clouds, sometimes hundreds at a time."
+          ]
+        },
+        {
+          "heading": "Aurora from above",
+          "points": [
+            "Auroras are not overhead from the station. They are often below and alongside it.",
+            "Charged particles from the Sun spiral down the magnetic field and make the upper atmosphere glow.",
+            "Crews describe watching green curtains move beneath the spacecraft."
+          ]
+        },
+        {
+          "heading": "The effect it has",
+          "points": [
+            "Astronauts repeatedly report a shift in perspective after seeing the planet whole and borderless.",
+            "It has a name in the literature: the orbital perspective, sometimes called the overview effect.",
+            "It is a consistent, documented reaction rather than a one-off poetic response."
+          ]
+        }
+      ],
+      "visual_queries": ["earth from space station", "iss earth observation", "earth at night city lights", "aurora from orbit", "earth limb sunrise orbit", "cupola window earth"],
+      "tags": ["international space station", "earth from orbit", "iss", "overview effect", "aurora", "earth at night"]
+    },
+    {
+      "id": "t052",
+      "title": "The Space Station Is Falling Right Now",
+      "angle": "what_if",
+      "hook": "The International Space Station is falling toward Earth continuously. It has been falling for over twenty-five years.",
+      "promise": "Why orbit is just falling that never lands, and what would happen if the station stopped being pushed.",
+      "beats": [
+        {
+          "heading": "Orbit is falling sideways",
+          "points": [
+            "Gravity at the station's altitude is still about ninety percent of what you feel standing up.",
+            "The station is being pulled down constantly. It simply moves sideways fast enough that the surface curves away beneath it.",
+            "Weightlessness on board is not the absence of gravity. It is continuous free fall."
+          ]
+        },
+        {
+          "heading": "The air that should not be there",
+          "points": [
+            "Even at 400 kilometres there are still traces of atmosphere.",
+            "That thin gas produces measurable drag, so the station loses altitude over time.",
+            "Left alone it would spiral down and re-enter."
+          ]
+        },
+        {
+          "heading": "It has to be pushed back up",
+          "points": [
+            "Visiting spacecraft periodically boost the station to a higher orbit.",
+            "These reboosts are routine operations, not emergencies.",
+            "Without them the station's useful life would be measured in a few years, not decades."
+          ]
+        },
+        {
+          "heading": "Solar weather changes the schedule",
+          "points": [
+            "When solar activity rises, the upper atmosphere heats and expands.",
+            "That increases drag at station altitude, so it descends faster.",
+            "Orbital maintenance is therefore tied to the Sun's eleven-year cycle."
+          ]
+        },
+        {
+          "heading": "How it will end",
+          "points": [
+            "Agencies plan a controlled deorbit rather than letting it fall uncontrolled.",
+            "The station is far too large to burn up completely, so the debris path has to be aimed at open ocean.",
+            "It is the largest object humans have ever had to bring down deliberately."
+          ]
+        }
+      ],
+      "visual_queries": ["international space station orbit", "iss solar arrays earth", "spacecraft docking iss", "earth from space station", "atmospheric reentry"],
+      "tags": ["international space station", "orbital mechanics", "free fall", "orbital decay", "deorbit"]
+    },
+    {
+      "id": "t053",
+      "title": "Every City on Earth, Seen From Orbit at Night",
+      "angle": "scale",
+      "hook": "From orbit you can see where humanity lives. It is a surprisingly thin skin of light on a mostly dark planet.",
+      "promise": "What the night side of Earth reveals about us, and the patterns nobody expects to see.",
+      "beats": [
+        {
+          "heading": "The lit world is small",
+          "points": [
+            "On the night side, populated regions appear as networks of orange and white light.",
+            "Enormous areas stay completely dark: oceans, deserts, forests, ice.",
+            "The lit fraction of the surface is far smaller than most people assume."
+          ]
+        },
+        {
+          "heading": "Coastlines draw themselves",
+          "points": [
+            "Cities cluster along shorelines and rivers, so geography appears without any map.",
+            "The Nile shows up as a bright line through otherwise black desert.",
+            "Where people settled follows water almost everywhere."
+          ]
+        },
+        {
+          "heading": "Colour tells you the technology",
+          "points": [
+            "Older sodium street lighting reads as orange, newer LED lighting as blue-white.",
+            "Satellite imagery over years shows cities shifting colour as lighting is replaced.",
+            "You can watch infrastructure change from orbit."
+          ]
+        },
+        {
+          "heading": "Lights with no city",
+          "points": [
+            "Some bright spots sit far from any settlement: gas flares, fishing fleets, industrial sites.",
+            "Fleets using bright lamps to attract catch can appear as dense clusters at sea.",
+            "Not every light is a place where anyone lives."
+          ]
+        },
+        {
+          "heading": "Why it is measured",
+          "points": [
+            "Night-light imagery is used to study urbanisation, energy use and disaster recovery.",
+            "A blackout after a storm is visible from orbit, and so is the recovery.",
+            "It is one of the few global datasets that updates nightly."
+          ]
+        }
+      ],
+      "visual_queries": ["earth at night city lights", "black marble earth night", "iss night pass earth", "earth from space station", "nile at night from orbit"],
+      "tags": ["earth at night", "city lights", "night lights", "urbanisation", "earth observation"]
+    },
+    {
+      "id": "t054",
+      "title": "What Happens to a Body After a Year in Orbit",
+      "angle": "discovery",
+      "hook": "Spend a year on the space station and you come back taller, with a weaker skeleton and eyes that have changed shape.",
+      "promise": "What a year of weightlessness measurably does to a person, and which changes do not fully reverse.",
+      "beats": [
+        {
+          "heading": "The spine unloads",
+          "points": [
+            "Without gravity compressing them, spinal discs expand and astronauts measurably gain height.",
+            "The gain reverses after return, sometimes with back pain.",
+            "Post-flight injury risk stays elevated for a period."
+          ]
+        },
+        {
+          "heading": "Bone and muscle disappear",
+          "points": [
+            "Weight-bearing bone can lose density at roughly one percent per month.",
+            "Muscle wastes fastest in the legs and lower back, which normally hold you upright.",
+            "Crews exercise around two hours a day purely to slow the loss."
+          ]
+        },
+        {
+          "heading": "Fluid moves to the head",
+          "points": [
+            "Without gravity pulling blood downward, fluid shifts upward and faces look puffy.",
+            "Pressure changes appear to flatten the back of the eye, altering vision in many astronauts.",
+            "This is one of the better-documented and less-solved problems of long spaceflight."
+          ]
+        },
+        {
+          "heading": "Radiation adds up",
+          "points": [
+            "Low Earth orbit still receives far more radiation than the ground.",
+            "The station is partly shielded by Earth's magnetic field; a Mars transit would not be.",
+            "Cumulative dose is a central limit on how long anyone can stay."
+          ]
+        },
+        {
+          "heading": "Down to gene expression",
+          "points": [
+            "A twin study compared an astronaut in orbit with his identical twin on the ground.",
+            "Thousands of changes in gene expression were recorded, most reverting after return.",
+            "A minority took far longer to normalise, which is exactly why long-duration data matters."
+          ]
+        }
+      ],
+      "visual_queries": ["astronaut on space station", "astronaut exercise iss", "iss interior module", "spacewalk earth background", "earth from space station"],
+      "tags": ["astronaut health", "microgravity", "space medicine", "iss", "twin study"]
+    },
+    {
+      "id": "t055",
+      "title": "The Most Expensive Thing Ever Built Is Not On Earth",
+      "angle": "scale",
+      "hook": "The most expensive single object humans have ever built is not a building or a ship. It is flying over your head at twenty-seven thousand kilometres an hour.",
+      "promise": "What it actually took to assemble a laboratory in orbit, piece by piece, without ever putting it together on the ground.",
+      "beats": [
+        {
+          "heading": "Built in pieces, in orbit",
+          "points": [
+            "The station was launched as separate modules over more than a decade and assembled in space.",
+            "The complete structure was never assembled on the ground to check that it fit.",
+            "It spans roughly the area of a football field including its solar arrays."
+          ]
+        },
+        {
+          "heading": "The cost",
+          "points": [
+            "Cost estimates across all partner agencies run to well over one hundred billion dollars.",
+            "That makes it the most expensive single object ever constructed.",
+            "The figure is spread across decades and many national budgets."
+          ]
+        },
+        {
+          "heading": "Continuously inhabited",
+          "points": [
+            "People have lived aboard without a break since November 2000.",
+            "There has been no moment since then when all humans were on Earth.",
+            "Crews rotate, but the station is never left empty."
+          ]
+        },
+        {
+          "heading": "Everything has to be sent",
+          "points": [
+            "Water is recycled aggressively, including from humidity and urine.",
+            "Air, food and spare parts arrive on scheduled cargo flights.",
+            "A supply failure is a genuine operational problem, not an inconvenience."
+          ]
+        },
+        {
+          "heading": "What it is actually for",
+          "points": [
+            "It exists to run experiments that need sustained weightlessness — in biology, materials and fluid physics.",
+            "It is also the long-duration testbed for keeping people alive away from Earth.",
+            "Almost everything known about the human body in space over months came from here."
+          ]
+        }
+      ],
+      "visual_queries": ["international space station", "iss solar arrays earth", "spacewalk assembly iss", "iss interior module", "cargo spacecraft docking"],
+      "tags": ["international space station", "iss", "space engineering", "human spaceflight", "orbital laboratory"]
     }
   ]
 }

@@ -110,12 +110,23 @@ _MOTIONS = ("zoom_in", "zoom_out", "pan_right", "pan_left", "pan_down")
 
 
 def plan_shots(assets: Sequence, total_seconds: float,
-               rng: Optional[random.Random] = None) -> List[Shot]:
+               rng: Optional[random.Random] = None,
+               best_first: bool = False,
+               loop_seamless: bool = False) -> List[Shot]:
     """Lay out shots covering ``total_seconds``.
 
     Assets are cycled in a shuffled order so the same visual never appears twice
     in a row, and video sources get a different in-point each time they come
     round — so reuse is not visible as repetition.
+
+    Args:
+        best_first: open on the highest-resolution asset. The first frame is what
+            decides whether anyone watches at all — on a Short it is the frame
+            people judge while scrolling, and on long-form it sits behind the
+            first three seconds of narration.
+        loop_seamless: end on the SAME asset the video opened with, so a Short
+            loops without a visible cut. Replays count as views, and a clean loop
+            is one of the few reliable ways to earn them.
     """
     rng = rng or random.Random()
     lo = float(cfg("video.shot_seconds_min", 4.0))
@@ -126,6 +137,12 @@ def plan_shots(assets: Sequence, total_seconds: float,
     usable = [a for a in assets if getattr(a, "path", None) and Path(a.path).exists()]
     if not usable:
         return []
+
+    # Open on the sharpest asset available.
+    opener = None
+    if best_first and usable:
+        opener = max(usable, key=lambda a: (getattr(a, "width", 0) or 0)
+                     * (getattr(a, "height", 0) or 0))
 
     order: List = []
     shots: List[Shot] = []
@@ -142,7 +159,12 @@ def plan_shots(assets: Sequence, total_seconds: float,
             if len(order) > 1 and last_src and Path(order[0].path) == last_src:
                 order.append(order.pop(0))
 
-        asset = order.pop(0)
+        if opener is not None and not shots:
+            asset = opener
+            if asset in order:
+                order.remove(asset)
+        else:
+            asset = order.pop(0)
         src = Path(asset.path)
         want = round(rng.uniform(lo, hi), 2)
         want = min(want, total_seconds - elapsed)
@@ -171,6 +193,14 @@ def plan_shots(assets: Sequence, total_seconds: float,
         ))
         last_src = src
         elapsed += want
+
+    # Close on the opening asset so a Short loops without a visible cut.
+    if loop_seamless and len(shots) > 2:
+        first = shots[0]
+        shots[-1] = Shot(src=first.src, is_video=first.is_video,
+                         duration=shots[-1].duration, start=first.start,
+                         motion=first.motion)
+        log.info("Seamless loop: closing on the opening shot (%s).", first.src.name)
 
     log.info("Shot plan: %d shots over %.1f min (avg %.1fs each).",
              len(shots), elapsed / 60.0, elapsed / max(1, len(shots)))
@@ -249,8 +279,14 @@ def _encode_args(crf: int, preset: str, fps: int) -> List[str]:
 
 
 def _render_shot(shot: Shot, index: int, W: int, H: int, fps: int,
-                 crf: int, preset: str, work: Path) -> Optional[Path]:
-    """Render one shot to a normalised, audio-free segment."""
+                 crf: int, preset: str, work: Path,
+                 overlay_png: Optional[Path] = None) -> Optional[Path]:
+    """Render one shot to a normalised, audio-free segment.
+
+    ``overlay_png`` composites a transparent PNG over the shot — used for the end
+    card, which keeps real footage moving underneath instead of cutting to a
+    static frame (a static outro is where viewers leave).
+    """
     out = work / f"seg_{index:05d}.mp4"
     cmd: List[str] = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error"]
 
@@ -265,7 +301,16 @@ def _render_shot(shot: Shot, index: int, W: int, H: int, fps: int,
               else f"scale={W}:{H}:force_original_aspect_ratio=increase,"
                    f"crop={W}:{H},fps={fps},{_grade_filter()},setsar=1")
 
-    cmd += ["-t", f"{shot.duration:.2f}", "-vf", vf]
+    if overlay_png and Path(overlay_png).exists():
+        cmd += ["-loop", "1", "-i", str(overlay_png)]
+        cmd += ["-filter_complex",
+                f"[0:v]{vf}[bg];[1:v]format=rgba,scale={W}:{H}[ov];"
+                f"[bg][ov]overlay=0:0:format=auto[vout]"]
+        cmd += ["-map", "[vout]"]
+    else:
+        cmd += ["-vf", vf]
+
+    cmd += ["-t", f"{shot.duration:.2f}"]
     cmd += _encode_args(crf, preset, fps)
     cmd += [str(out)]
 
@@ -382,6 +427,62 @@ def _mux_audio(video: Path, narration: Path, out_path: Path,
 # ---------------------------------------------------------------------------
 # Last-resort background
 # ---------------------------------------------------------------------------
+def make_end_card(out_png: Path, W: int, H: int,
+                  next_teaser: str = "") -> Optional[Path]:
+    """A transparent end-card overlay for the final shot.
+
+    Two reasons this exists. First, YouTube end screens can only be placed in the
+    last 5-20 seconds, so the video has to actually reserve that time. Second, the
+    ask to subscribe is the single biggest lever on subscriber conversion, and
+    Beyond Orbit had none — the video simply stopped.
+
+    It is an OVERLAY, not a static card: real footage keeps moving underneath,
+    because cutting to a still frame at the end is where viewers leave.
+    """
+    try:
+        from PIL import Image, ImageDraw
+
+        out_png.parent.mkdir(parents=True, exist_ok=True)
+        img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+
+        # Darken the lower half so text reads over any footage.
+        for y in range(int(H * 0.45), H):
+            f = (y - H * 0.45) / (H - H * 0.45)
+            draw.line([(0, y), (W, y)], fill=(0, 0, 0, int(215 * f ** 1.1)))
+
+        margin = int(W * 0.06)
+        accent = _accent_rgb()
+        channel = str(cfg("channel.name", "Beyond Orbit"))
+        cta = str(cfg("channel.cta", "Subscribe for a new deep-space story."))
+
+        big = _load_font(int(W * 0.045))
+        mid = _load_font(int(W * 0.028))
+        small = _load_font(int(W * 0.020))
+
+        y = int(H * 0.60)
+        _text_with_shadow(draw, (margin, y), channel, big, fill=(255, 255, 255, 255))
+        y += int(big.size * 1.35)
+        draw.rectangle([margin, y, margin + int(W * 0.10), y + max(3, int(H * 0.006))],
+                       fill=accent + (255,))
+        y += int(H * 0.035)
+        _text_with_shadow(draw, (margin, y), cta[:70], mid, fill=(235, 240, 255, 255))
+
+        if next_teaser:
+            y += int(mid.size * 1.5)
+            _text_with_shadow(draw, (margin, y), f"Next: {next_teaser[:56]}",
+                              small, fill=(200, 210, 235, 255))
+
+        # Leave the right-hand third clear — that is where YouTube renders the
+        # end-screen subscribe badge and video thumbnails.
+        img.save(str(out_png), "PNG")
+        log.info("End card created: %s", out_png.name)
+        return out_png
+    except Exception as exc:  # noqa: BLE001
+        log.warning("End card generation failed (%s); continuing without it.", exc)
+        return None
+
+
 def _emergency_assets(work: Path, W: int, H: int, count: int = 5) -> List:
     """Generate starfield stills so a render is possible with no footage at all."""
     from modules.nasa_fetch import generate_starfield
@@ -429,6 +530,9 @@ def build_documentary(
     burn_subtitles: Optional[bool] = None,
     max_seconds: Optional[float] = None,
     outro_seconds: Optional[float] = None,
+    end_card_seconds: Optional[float] = None,
+    next_teaser: str = "",
+    loop_seamless: bool = False,
 ) -> Optional[Path]:
     """Render a finished video.
 
@@ -473,6 +577,8 @@ def build_documentary(
                    else float(cfg("video.max_minutes", 20)) * 60.0)
     outro = (float(outro_seconds) if outro_seconds is not None
              else float(cfg("video.outro_seconds", 6.0)))
+    end_card_seconds = (float(end_card_seconds) if end_card_seconds is not None
+                        else float(cfg("video.end_card_seconds", 0)))
 
     narr_dur = _duration(narration_path)
     if narr_dur <= 0:
@@ -504,17 +610,41 @@ def build_documentary(
             log.warning("No footage supplied — generating starfields instead.")
             usable = _emergency_assets(work, W, H)
 
-        shots = plan_shots(usable, total, rng) if usable else []
+        shots = plan_shots(
+            usable, total, rng,
+            best_first=bool(cfg("video.best_shot_first", True)),
+            loop_seamless=bool(loop_seamless),
+        ) if usable else []
         if not shots:
             if _solid_fallback(narration_path, out_path, W, H, fps, total):
                 log.info("Rendered with the plain fallback: %s", out_path.name)
                 return out_path
             return None
 
+        # --- End card: overlay the last N seconds -------------------------
+        # YouTube end screens can only live in the last 5-20 seconds, so the
+        # video has to reserve that window, and the subscribe ask has to exist at
+        # all. Applied as an overlay so footage keeps moving underneath.
+        end_card: Optional[Path] = None
+        end_from_index = len(shots)
+        if end_card_seconds and end_card_seconds > 0 and len(shots) > 1:
+            end_card = make_end_card(work / "endcard.png", W, H,
+                                     next_teaser=next_teaser or "")
+            if end_card:
+                acc = 0.0
+                for i in range(len(shots) - 1, -1, -1):
+                    acc += shots[i].duration
+                    end_from_index = i
+                    if acc >= end_card_seconds:
+                        break
+                log.info("End card over the final %d shot(s) (~%.0fs).",
+                         len(shots) - end_from_index, acc)
+
         # --- Pass 1: encode each shot -------------------------------------
         segments: List[Path] = []
         for i, shot in enumerate(shots):
-            seg = _render_shot(shot, i, W, H, fps, crf, preset, work)
+            seg = _render_shot(shot, i, W, H, fps, crf, preset, work,
+                               overlay_png=(end_card if i >= end_from_index else None))
             if seg:
                 segments.append(seg)
             if (i + 1) % 20 == 0:
@@ -591,4 +721,11 @@ def build_vertical(
         burn_subtitles=True,
         max_seconds=max_seconds,
         outro_seconds=0.6,
+        # No end card on a Short — 20 seconds has no room for one, and the CTA is
+        # already burned into the captions.
+        end_card_seconds=0,
+        # Close on the opening shot so the Short loops with no visible cut.
+        # Replays count as views, and a clean loop is one of the few dependable
+        # ways to earn them.
+        loop_seamless=bool(cfg("shorts.seamless_loop", True)),
     )
