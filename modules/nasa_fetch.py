@@ -78,6 +78,41 @@ _MIN_USABLE_BYTES = 30 * 1024
 
 # Phrases that indicate someone other than NASA owns the material. Conservative
 # on purpose: a false skip costs us one clip, a false accept costs monetisation.
+# NASA's library is an institutional archive, not a picture library. Searching
+# "black hole" returns press conferences, people at desks, buildings, award
+# ceremonies and mission patches alongside the actual science imagery. Those make
+# a space documentary look like a corporate slideshow, so they are rejected.
+_IRRELEVANT_MARKERS = (
+    "administrator", "press conference", "press briefing", "briefing",
+    "ceremony", "award", "medal", "anniversary", "celebration", "reception",
+    "employee", "staff", "portrait", "headshot", "interview", "panel",
+    "headquarters", "visitor center", "museum", "exhibit", "classroom",
+    "students", "teacher", "education event", "town hall", "meeting",
+    "signing", "groundbreaking", "ribbon", "tour of", "visits",
+    "clean room", "cleanroom", "assembly", "technicians", "workers",
+    "mockup", "mock-up", "simulator", "training", "wind tunnel",
+    "conference room", "auditorium", "podium", "audience", "crowd",
+    "patch", "decal", "sticker", "poster", "banner", "screenshot",
+    "groundhog", "picnic", "barbecue", "run club",
+)
+
+# Positive signals that an asset really is space/science imagery.
+_IMAGERY_MARKERS = (
+    "nebula", "galaxy", "galaxies", "star", "stars", "stellar", "cluster",
+    "planet", "planetary", "moon", "lunar", "mars", "martian", "jupiter",
+    "saturn", "venus", "mercury", "neptune", "uranus", "pluto", "titan",
+    "europa", "enceladus", "io ", "asteroid", "comet", "meteor",
+    "black hole", "quasar", "pulsar", "supernova", "remnant", "accretion",
+    "hubble", "webb", "jwst", "chandra", "spitzer", "cassini", "voyager",
+    "juno", "perseverance", "curiosity", "new horizons", "solar",
+    "sun", "corona", "coronal", "sunspot", "aurora", "eclipse",
+    "milky way", "cosmic", "universe", "deep field", "telescope image",
+    "illustration", "artist", "concept", "visualization", "simulation",
+    "rendering", "infrared", "ultraviolet", "x-ray", "spectrum",
+    "surface", "crater", "canyon", "volcano", "ice", "atmosphere",
+    "orbit", "spacecraft", "probe", "rover", "earth from", "limb",
+)
+
 _THIRD_PARTY_MARKERS = (
     "copyright",
     "\u00a9",
@@ -240,6 +275,36 @@ def _third_party_rights(*texts: object) -> Optional[str]:
     return None
 
 
+def _relevance(query: str, *texts: object) -> Optional[str]:
+    """Decide whether an asset is real space imagery.
+
+    Returns None if it should be KEPT, otherwise the reason to reject.
+
+    NASA's library is an institutional archive: a search for "black hole" happily
+    returns a photo of someone presenting about black holes. Those results are
+    technically on-topic and visually useless, so both a negative and a positive
+    test are applied.
+    """
+    blob = " ".join(str(t).lower() for t in texts if t)
+    if not blob.strip():
+        return "no metadata"
+
+    for marker in _IRRELEVANT_MARKERS:
+        if marker in blob:
+            return f"looks like a {marker.strip()} photo"
+
+    if any(m in blob for m in _IMAGERY_MARKERS):
+        return None
+
+    # Fall back to the query's own content words — a match still suggests the
+    # asset depicts the subject rather than an event about it.
+    for word in str(query).lower().split():
+        if len(word) > 4 and word in blob:
+            return None
+
+    return "no space-imagery signal in the metadata"
+
+
 def _credit_for(center: object, secondary: object, title: object) -> str:
     """Build a human attribution line for an asset."""
     blob = f"{center} {secondary} {title}".lower()
@@ -322,6 +387,12 @@ def _search_images_api(query: str, want_video: bool, limit: int) -> List[dict]:
         if cfg("nasa.require_public_domain", True) and marker:
             log.debug("Skip %s — third-party rights marker %r", nasa_id, marker)
             continue
+
+        if bool(cfg("nasa.filter_relevance", True)):
+            reason = _relevance(query, title, keywords, desc[:400])
+            if reason:
+                log.debug("Skip %s — %s (%r)", nasa_id, reason, str(title)[:60])
+                continue
 
         keep.append(
             {
@@ -630,15 +701,59 @@ def _fetch_assets_inner(queries: Sequence[str], want: Optional[int],
                              len(assets), want, got.kind, got.asset_id,
                              got.width, got.height, got.credit)
 
-    # --- Pexels filler if NASA came up short.
-    if len(assets) < max(3, want // 3):
+    # --- Broaden to high-yield NASA queries before giving up.
+    #
+    # A niche topic query ("event horizon simulation") can return almost nothing,
+    # while these reliably return real, spectacular, public-domain imagery. A
+    # genuine Hubble nebula in a black-hole Short is still real space and still
+    # looks like a documentary; a stock sci-fi render is not.
+    if len(assets) < want:
+        generic = cfg("nasa.fallback_queries", []) or [
+            "hubble space telescope image", "james webb space telescope image",
+            "nebula", "galaxy", "star cluster", "deep field",
+        ]
+        log.info("Broadening to generic NASA imagery queries (%d/%d so far).",
+                 len(assets), want)
+        for query in generic:
+            if len(assets) >= want:
+                break
+            for item in _search_images_api(query, False, limit=want):
+                if len(assets) >= want:
+                    break
+                if item["nasa_id"] in seen_ids:
+                    continue
+                seen_ids.add(item["nasa_id"])
+                got = _download_images_api_item(item, dest_dir, query)
+                if got:
+                    assets.append(got)
+                    log.info("  [%d/%d] %s %s (%dx%d) — %s",
+                             len(assets), want, got.kind, got.asset_id,
+                             got.width, got.height, got.credit)
+
+    # --- Optional Pexels filler, OFF by default.
+    #
+    # Pexels has no real astronomy imagery. A search for "black hole" there
+    # returns sci-fi renders, neon abstracts and purple gradients, which is
+    # exactly what made early Shorts look fake rather than documentary. A
+    # generated starfield is a more honest and better-looking fallback than
+    # somebody's stock nebula render, so this stays disabled unless deliberately
+    # switched on.
+    if bool(cfg("nasa.allow_pexels_filler", False)) and len(assets) < max(3, want // 3):
         need = want - len(assets)
-        log.info("Only %d NASA assets — topping up with Pexels (need %d).",
+        log.info("Only %d NASA assets — topping up with Pexels (need %d). "
+                 "Note Pexels space footage is stock/sci-fi, not real imagery.",
                  len(assets), need)
         for q in queries[:3]:
             if len(assets) >= want:
                 break
             assets.extend(_fetch_pexels(q, dest_dir, want=need))
+    elif len(assets) < max(3, want // 3):
+        log.warning("Only %d usable NASA asset(s) for %r. The renderer will "
+                    "reuse them with different crops and motion, and fill any "
+                    "gap with a generated starfield. Set "
+                    "nasa.allow_pexels_filler=true to allow stock footage "
+                    "instead (it looks noticeably less authentic).",
+                    len(assets), queries[:2])
 
     if not assets:
         log.warning("No footage could be fetched — the renderer will fall back "

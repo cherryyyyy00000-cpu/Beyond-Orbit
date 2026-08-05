@@ -136,7 +136,18 @@
     "images_api": "https://images-api.nasa.gov/search",
     "block_keywords": ["logo", "insignia", "meatball", "seal", "emblem", "worm"],
     "require_public_domain": true,
-    "comment": "NASA content generally is NOT subject to copyright in the US — that is this channel's unfair advantage: broadcast-quality space footage with effectively zero Content ID risk. SOURCES: 'images_api' (images-api.nasa.gov) is the only source enabled by default. It needs no API key, is a documented stable endpoint, and already mirrors a large amount of SVS and JPL material. You may add 'svs' to this list, but be aware modules/nasa_fetch.py deliberately does NOT download from SVS: its JSON endpoint is not published as a versioned public API, so we do not want a silent shape change to break every render. TWO HARD RULES are enforced in nasa_fetch.py: (1) block_keywords rejects the NASA logo/insignia/meatball/worm, which may NOT be used because doing so implies NASA endorses this channel — matching is word-boundary based so 'wormhole' and 'sealed' are not false positives; (2) any asset whose metadata names a third-party rights holder (copyright, Getty, 'all rights reserved', etc.) is skipped, because some NASA pages embed licensed music or contractor footage. ESA/Hubble and ESO material is CC BY 4.0, so attribution is auto-added to the description by modules/metadata.py."
+    "filter_relevance": true,
+    "allow_pexels_filler": false,
+    "fallback_queries": [
+      "hubble space telescope image",
+      "james webb space telescope image",
+      "nebula",
+      "galaxy",
+      "star cluster",
+      "deep field",
+      "solar system planet"
+    ],
+    "comment": "NASA content generally is NOT subject to copyright in the US — that is this channel's unfair advantage: real space imagery with effectively zero Content ID risk. SOURCE: 'images_api' (images-api.nasa.gov) only. It needs no key and is a documented stable endpoint. You may add 'svs', but nasa_fetch.py deliberately does not download from it: its JSON endpoint is not a versioned public API and a silent shape change would break every render. FOUR FILTERS are enforced: (1) block_keywords rejects the NASA logo/insignia/meatball/worm, which may NOT be used because it implies NASA endorses this channel — word-boundary matched so 'wormhole' and 'sealed' are not false positives; (2) any asset naming a third-party rights holder is skipped, since some NASA pages embed licensed music or contractor footage; (3) filter_relevance rejects institutional photos — NASA's library is an ARCHIVE, so searching 'black hole' also returns press conferences, award ceremonies, buildings, cleanrooms and mission patches, which make a documentary look like a corporate slideshow; it also requires a positive space-imagery signal; (4) min_image_width keeps low-resolution thumbnails out. IF A NICHE QUERY RETURNS TOO LITTLE, fallback_queries are tried next — these reliably return spectacular real imagery, and a genuine Hubble nebula in a black-hole Short is still real space. allow_pexels_filler is FALSE on purpose: Pexels has no real astronomy imagery, so 'black hole' there returns sci-fi renders and neon abstracts, which is exactly what made early Shorts look fake. ESA/Hubble and ESO material is CC BY 4.0, so attribution is auto-added by modules/metadata.py."
   },
 
   "youtube": {
