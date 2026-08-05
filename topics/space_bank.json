@@ -1,0 +1,2589 @@
+{
+  "version": 1,
+  "comment": "Beyond Orbit topic bank. Each entry is a BRIEF, not a finished script. modules/script_writer.py expands it into a 1500-2200 word documentary: 'hook' becomes the cold open (first 3 seconds, no intro), 'promise' is stated by ~12s, each beat becomes a chapter, and an open loop is planted between beats. With GEMINI_API_KEY set, the brief is handed to Gemini for fresh prose; without a key the beats are expanded by the built-in templates, so the pipeline never depends on an API. 'visual_queries' are fed to modules/nasa_fetch.py to pull public-domain NASA/ESA footage. Facts here are deliberately conservative and checkable - a space channel lives or dies by its comment section, so speculation is always labelled as speculation.",
+  "angles": {
+    "what_if": "Hypothetical scenario played out step by step - highest retention format.",
+    "scale": "Cosmic scale shock - makes the viewer feel small.",
+    "existential": "Deep-time / end-of-everything dread.",
+    "countdown": "Ranked list, each item bigger than the last.",
+    "mystery": "An unexplained observation, honestly framed as unexplained.",
+    "threat": "Something that could genuinely affect Earth - no fearmongering.",
+    "discovery": "A recent real result and why it broke expectations."
+  },
+  "topics": [
+    {
+      "id": "t001",
+      "title": "What If You Fell Into a Black Hole?",
+      "angle": "what_if",
+      "hook": "You would not be crushed. Long before that, you would be stretched into a thread of atoms thousands of kilometres long.",
+      "promise": "We are going to fall in together, one second at a time, and by the end you will understand why the answer depends entirely on which black hole you pick.",
+      "beats": [
+        {
+          "heading": "The last thing you see",
+          "points": [
+            "Light bends around the event horizon, so the sky compresses into a bright ring above you.",
+            "The black hole is not a hole - it is a region where every path leads inward.",
+            "Nothing about the horizon feels like a surface. There is no wall to hit."
+          ]
+        },
+        {
+          "heading": "Spaghettification",
+          "points": [
+            "Gravity pulls your feet harder than your head - that difference is called tidal force.",
+            "Around a stellar-mass black hole the difference is lethal before you ever reach the horizon.",
+            "Around a supermassive one it is gentle enough that you cross the horizon intact and never feel the moment it happens."
+          ]
+        },
+        {
+          "heading": "Time stops being shared",
+          "points": [
+            "To a distant observer your fall slows and reddens until you appear frozen at the edge forever.",
+            "From your own point of view the fall takes seconds and never pauses.",
+            "Both descriptions are correct. Time is not a universal clock."
+          ]
+        },
+        {
+          "heading": "Past the point of no return",
+          "points": [
+            "Inside the horizon, moving toward the centre is as unavoidable as moving forward in time.",
+            "Every direction you could point a rocket still ends at the singularity.",
+            "Physics stops giving clean answers at the centre - and that honesty matters."
+          ]
+        },
+        {
+          "heading": "The information problem",
+          "points": [
+            "Black holes slowly evaporate through Hawking radiation.",
+            "If they vanish completely, what happened to everything that fell in?",
+            "This unresolved conflict between gravity and quantum mechanics is one of the biggest open problems in physics."
+          ]
+        }
+      ],
+      "visual_queries": ["black hole", "black hole accretion disk", "event horizon simulation", "gravitational lensing", "sagittarius a star"],
+      "tags": ["black hole", "event horizon", "spaghettification", "hawking radiation", "general relativity"]
+    },
+    {
+      "id": "t002",
+      "title": "The Largest Object in the Universe Makes No Sense",
+      "angle": "scale",
+      "hook": "There is a structure in the sky so large that light needs ten billion years to cross it. It should not exist.",
+      "promise": "By the end you will know why this one object quietly challenges an assumption cosmology is built on.",
+      "beats": [
+        {
+          "heading": "Starting small - our own galaxy",
+          "points": [
+            "The Milky Way is about 100,000 light years across and holds hundreds of billions of stars.",
+            "At the speed of light, crossing it takes 100,000 years. It is already incomprehensible.",
+            "And it is a speck."
+          ]
+        },
+        {
+          "heading": "Galaxies gather into groups",
+          "points": [
+            "Our Local Group contains the Milky Way, Andromeda and dozens of dwarf galaxies.",
+            "Groups gather into clusters, clusters into superclusters.",
+            "We sit inside Laniakea, a supercluster roughly 520 million light years wide."
+          ]
+        },
+        {
+          "heading": "Then the pattern breaks",
+          "points": [
+            "Astronomers have mapped enormous groupings of quasars and gamma-ray bursts spanning billions of light years.",
+            "The cosmological principle says the universe should look roughly uniform above a certain scale.",
+            "Structures this large sit awkwardly with that assumption."
+          ]
+        },
+        {
+          "heading": "Is it real, or is it us?",
+          "points": [
+            "Some researchers argue these groupings are statistical illusions from how we select objects.",
+            "Others argue the structures are genuine and the models need adjusting.",
+            "This is an active, unsettled debate - not a solved fact."
+          ]
+        },
+        {
+          "heading": "What it means either way",
+          "points": [
+            "The observable universe is about 93 billion light years across.",
+            "We can only ever see the part whose light has had time to reach us.",
+            "The honest position is that we are mapping a coastline while standing on one grain of sand."
+          ]
+        }
+      ],
+      "visual_queries": ["galaxy cluster", "large scale structure universe", "cosmic web simulation", "laniakea supercluster", "deep field galaxies"],
+      "tags": ["largest object", "cosmic web", "supercluster", "laniakea", "cosmology"]
+    },
+    {
+      "id": "t003",
+      "title": "What Is at the Edge of the Universe?",
+      "angle": "existential",
+      "hook": "There is an edge to what we can see. Cross it, and you would find nothing special at all - which is the strangest part.",
+      "promise": "We will walk outward until we hit the wall, and then explain exactly what that wall is made of.",
+      "beats": [
+        {
+          "heading": "The edge is made of time, not space",
+          "points": [
+            "The universe is about 13.8 billion years old, so light has had 13.8 billion years to travel.",
+            "Because space itself expanded while that light travelled, the boundary sits roughly 46 billion light years away.",
+            "That boundary is called the observable universe - and it is centred on you."
+          ]
+        },
+        {
+          "heading": "The oldest light",
+          "points": [
+            "Look far enough and you reach a moment when the universe was hot, dense fog.",
+            "That fog cleared about 380,000 years after the beginning.",
+            "Its glow is still arriving today as the cosmic microwave background - the wall we cannot see past."
+          ]
+        },
+        {
+          "heading": "Everyone has their own edge",
+          "points": [
+            "A galaxy a billion light years away has its own observable sphere, offset from ours.",
+            "There is no centre and no rim - only overlapping bubbles of visibility.",
+            "Asking what is outside is like asking what is north of the North Pole."
+          ]
+        },
+        {
+          "heading": "The part we are losing",
+          "points": [
+            "Expansion is accelerating, so distant galaxies are receding faster over time.",
+            "Objects are steadily crossing beyond the point where their light can ever reach us.",
+            "The observable universe is, in that sense, slowly getting emptier."
+          ]
+        },
+        {
+          "heading": "What lies beyond",
+          "points": [
+            "Most models suggest space simply continues, possibly forever.",
+            "It may be finite and curved back on itself, or genuinely infinite - we cannot currently tell.",
+            "Anything past our horizon is permanently untestable, which puts it outside science and inside speculation."
+          ]
+        }
+      ],
+      "visual_queries": ["cosmic microwave background", "hubble deep field", "expanding universe animation", "big bang timeline", "webb deep field"],
+      "tags": ["observable universe", "edge of universe", "cosmic microwave background", "expansion", "cosmology"]
+    },
+    {
+      "id": "t004",
+      "title": "7 Places in Space That Should Not Exist",
+      "angle": "countdown",
+      "hook": "Seven objects have been found that break the rules we wrote for them. The last one is still unexplained.",
+      "promise": "Seven real objects, ranked by how badly they broke expectations - and what each one forced astronomers to change.",
+      "beats": [
+        {
+          "heading": "7 - The coldest place we know",
+          "points": [
+            "The Boomerang Nebula measures about one degree above absolute zero.",
+            "It is colder than the background temperature of space itself.",
+            "Rapidly expanding gas acts like a refrigerator on an enormous scale."
+          ]
+        },
+        {
+          "heading": "6 - A planet with two suns",
+          "points": [
+            "Kepler-16b orbits a pair of stars, so it genuinely has two sunsets.",
+            "Before its discovery, such orbits were considered likely to be unstable.",
+            "It confirmed that planets can survive in circumbinary systems."
+          ]
+        },
+        {
+          "heading": "5 - Where it rains diamonds",
+          "points": [
+            "On Neptune and Uranus, extreme pressure can split methane and compress the carbon.",
+            "Laboratory experiments have reproduced diamond formation under those conditions.",
+            "The diamonds are thought to sink slowly toward the interior."
+          ]
+        },
+        {
+          "heading": "4 - A star older than it should be",
+          "points": [
+            "Early measurements of HD 140283 suggested an age uncomfortably close to the age of the universe.",
+            "Refined measurements brought it back inside the limit.",
+            "It is a good example of a paradox resolved by better data rather than new physics."
+          ]
+        },
+        {
+          "heading": "3 - An almost empty region",
+          "points": [
+            "The Bootes Void is roughly 330 million light years across with very few galaxies.",
+            "If we lived at its centre, we would not have discovered other galaxies until relatively recently.",
+            "It is likely several smaller voids that merged."
+          ]
+        },
+        {
+          "heading": "2 - Something pulling our galaxy",
+          "points": [
+            "The Milky Way is moving toward a region hidden behind the plane of our own galaxy.",
+            "It is called the Great Attractor, and much of the pull is now attributed to the Shapley Supercluster.",
+            "We are being drawn toward something we still cannot see clearly."
+          ]
+        },
+        {
+          "heading": "1 - The signal that never repeated",
+          "points": [
+            "In 1977 the Big Ear telescope recorded a strong, narrow radio signal lasting 72 seconds.",
+            "It has never been detected again despite repeated searches.",
+            "The honest answer is that we do not know what it was - and one unrepeated event cannot be verified."
+          ]
+        }
+      ],
+      "visual_queries": ["boomerang nebula", "exoplanet binary star", "neptune interior", "bootes void", "radio telescope array"],
+      "tags": ["space mysteries", "boomerang nebula", "bootes void", "great attractor", "wow signal"]
+    },
+    {
+      "id": "t005",
+      "title": "The Signal From Space Nobody Can Explain",
+      "angle": "mystery",
+      "hook": "For seventy-two seconds in 1977, a telescope in Ohio recorded something it was never able to hear again.",
+      "promise": "We will go through the actual data, the leading explanations, and why the most exciting answer is also the weakest.",
+      "beats": [
+        {
+          "heading": "What was actually recorded",
+          "points": [
+            "The Big Ear radio telescope was running an automated sky survey.",
+            "One sequence rose far above the background and then faded exactly as a fixed cosmic source should.",
+            "An astronomer circled it on the printout and wrote a single word: Wow."
+          ]
+        },
+        {
+          "heading": "Why it looked promising",
+          "points": [
+            "It sat close to the hydrogen line, a frequency long proposed as a natural channel for interstellar contact.",
+            "It was narrow in frequency, which is characteristic of a deliberate transmission rather than a broad natural source.",
+            "Its drift matched the sky, arguing against local interference."
+          ]
+        },
+        {
+          "heading": "Why it stayed unexplained",
+          "points": [
+            "The telescope's design means a real fixed source should have appeared twice. It appeared once.",
+            "Decades of follow-up searches found nothing at that position.",
+            "A one-off detection cannot be independently verified, which is why it remains an anomaly rather than evidence."
+          ]
+        },
+        {
+          "heading": "The proposed explanations",
+          "points": [
+            "Reflected terrestrial transmissions, satellite interference, or a rare instrumental artefact.",
+            "One published suggestion involved hydrogen clouds around passing comets, though it has been criticised.",
+            "None of the natural explanations is fully satisfying, and none has been confirmed."
+          ]
+        },
+        {
+          "heading": "What it taught us",
+          "points": [
+            "Modern searches are built around repeatability precisely because of cases like this.",
+            "An unexplained signal is not the same as an alien signal.",
+            "Sitting with a genuine unknown is more honest, and more interesting, than inventing an answer."
+          ]
+        }
+      ],
+      "visual_queries": ["radio telescope", "arecibo", "green bank telescope", "milky way core", "seti antenna array"],
+      "tags": ["wow signal", "seti", "radio astronomy", "unexplained signal", "big ear"]
+    },
+    {
+      "id": "t006",
+      "title": "The Star That Will Explode in Our Lifetime",
+      "angle": "threat",
+      "hook": "One of the brightest stars in the night sky is already dying. When it goes, it will be visible in daylight.",
+      "promise": "We will cover what actually happens, when it might happen, and exactly how much danger Earth is in - which is less than you think.",
+      "beats": [
+        {
+          "heading": "A star running out of fuel",
+          "points": [
+            "Betelgeuse is a red supergiant hundreds of times wider than the Sun.",
+            "It burns through fuel so fast that its whole life lasts millions, not billions, of years.",
+            "It is already in the final stage of that life."
+          ]
+        },
+        {
+          "heading": "The great dimming",
+          "points": [
+            "In 2019 and 2020 Betelgeuse faded dramatically and people speculated it was about to explode.",
+            "Observations indicated a huge cloud of dust ejected by the star was blocking its light.",
+            "It recovered - a reminder that dimming is not a countdown."
+          ]
+        },
+        {
+          "heading": "What the explosion looks like",
+          "points": [
+            "The core collapses in seconds and the outer layers are blown away.",
+            "For weeks it could rival the Moon in brightness and be visible in daytime.",
+            "The remnant would be a neutron star or a black hole."
+          ]
+        },
+        {
+          "heading": "When",
+          "points": [
+            "Estimates range from soon in astronomical terms to a hundred thousand years away.",
+            "Because the star is roughly 500 to 650 light years away, it may already have happened and the light has not arrived.",
+            "Anyone giving you a precise date is guessing."
+          ]
+        },
+        {
+          "heading": "Is Earth at risk",
+          "points": [
+            "A supernova would need to be within roughly 50 light years to seriously damage our atmosphere.",
+            "Betelgeuse is ten times farther than that.",
+            "It would be the astronomical event of the millennium and completely harmless."
+          ]
+        }
+      ],
+      "visual_queries": ["betelgeuse", "red supergiant star", "supernova explosion", "supernova remnant", "crab nebula"],
+      "tags": ["betelgeuse", "supernova", "red supergiant", "stellar death", "astronomy"]
+    },
+    {
+      "id": "t007",
+      "title": "What Webb Found Should Not Be Possible",
+      "angle": "discovery",
+      "hook": "The James Webb telescope looked at the early universe and found galaxies that were far too big, far too soon.",
+      "promise": "We will go through what was actually measured, why it caused a stir, and where the problem stands now.",
+      "beats": [
+        {
+          "heading": "Looking back in time",
+          "points": [
+            "Light takes time to travel, so distant objects show us the distant past.",
+            "Webb observes in infrared, letting it see light stretched by billions of years of expansion.",
+            "It was designed specifically to reach the era when the first galaxies formed."
+          ]
+        },
+        {
+          "heading": "The surprise",
+          "points": [
+            "Webb found candidate galaxies that appeared unexpectedly massive only a few hundred million years after the Big Bang.",
+            "Standard galaxy-formation models struggled to assemble that much mass that quickly.",
+            "Headlines declared cosmology broken."
+          ]
+        },
+        {
+          "heading": "Why early estimates can mislead",
+          "points": [
+            "Mass is inferred from brightness, and brightness can be boosted by black holes or unusual star populations.",
+            "Follow-up spectroscopy revised several of the most extreme candidates.",
+            "Some remain genuinely surprising, others turned out to be more ordinary."
+          ]
+        },
+        {
+          "heading": "What is actually shaken",
+          "points": [
+            "The Big Bang framework is not in question - the tension is with models of how fast galaxies assemble.",
+            "That is a meaningful problem, and a much narrower one than 'cosmology is wrong'.",
+            "Working out the difference is what the next few years of observations are for."
+          ]
+        },
+        {
+          "heading": "Why it matters anyway",
+          "points": [
+            "We are seeing an era no instrument could resolve before.",
+            "Every generation of telescope has found the early universe messier than predicted.",
+            "Being wrong in a measurable way is exactly how this is supposed to work."
+          ]
+        }
+      ],
+      "visual_queries": ["james webb space telescope", "webb deep field", "early galaxies", "webb first images", "infrared galaxy"],
+      "tags": ["james webb space telescope", "early galaxies", "jwst", "cosmology", "big bang"]
+    },
+    {
+      "id": "t008",
+      "title": "How the Universe Will End",
+      "angle": "existential",
+      "hook": "The universe has an expiry date. There are three ways it could arrive, and one of them could start without warning.",
+      "promise": "Three endings, ranked from slowest to most abrupt, and what the current evidence actually favours.",
+      "beats": [
+        {
+          "heading": "Ending one - the long cold",
+          "points": [
+            "Star formation eventually runs out of usable gas.",
+            "The last stars fade, leaving black holes and cooling remnants.",
+            "Even black holes evaporate, on timescales so long the numbers stop meaning anything."
+          ]
+        },
+        {
+          "heading": "Ending two - the tear",
+          "points": [
+            "If the acceleration of expansion strengthens over time, it eventually overwhelms every bound structure.",
+            "Galaxies, then stars, then atoms are pulled apart.",
+            "This depends on how dark energy behaves, which is not yet measured precisely enough to settle."
+          ]
+        },
+        {
+          "heading": "Ending three - the collapse",
+          "points": [
+            "If expansion reversed, everything would fall back together into a hot dense state.",
+            "Current measurements strongly disfavour this.",
+            "It remains the tidiest ending and the least likely one."
+          ]
+        },
+        {
+          "heading": "The one nobody likes",
+          "points": [
+            "Some models allow the vacuum itself to sit in a state that is stable but not the lowest possible.",
+            "If a lower state exists, a bubble of it could expand at nearly the speed of light.",
+            "No warning is possible, because the warning would arrive with the event. This is speculative, not predicted."
+          ]
+        },
+        {
+          "heading": "What the evidence points to",
+          "points": [
+            "The heat death scenario fits current observations best.",
+            "The relevant timescales are so vast that Earth and the Sun are long gone first.",
+            "Knowing the ending does not make the middle less remarkable."
+          ]
+        }
+      ],
+      "visual_queries": ["heat death universe", "black hole evaporation", "dark energy expansion", "dying star", "empty space stars"],
+      "tags": ["heat death", "big rip", "big crunch", "vacuum decay", "fate of the universe"]
+    },
+    {
+      "id": "t009",
+      "title": "The Object That Came From Another Star",
+      "angle": "mystery",
+      "hook": "In 2017 something passed through our solar system that did not come from our solar system - and it was shaped wrong.",
+      "promise": "What was measured, what was speculated, and why the boring explanation is probably right.",
+      "beats": [
+        {
+          "heading": "An orbit that gave it away",
+          "points": [
+            "Its path was hyperbolic, meaning it was never bound to the Sun.",
+            "It arrived from interstellar space and left again.",
+            "It was named 1I/'Oumuamua, the first confirmed interstellar visitor."
+          ]
+        },
+        {
+          "heading": "The strange shape",
+          "points": [
+            "Its brightness varied dramatically as it rotated, implying a very elongated or flattened object.",
+            "Ratios of roughly 6 to 1 or more were inferred - unlike anything in our own solar system.",
+            "We never got a resolved image. Everything came from a fading dot of light."
+          ]
+        },
+        {
+          "heading": "The acceleration",
+          "points": [
+            "It sped up slightly more than gravity alone could explain.",
+            "Comets do this through outgassing, but no coma or tail was detected.",
+            "That gap is where the speculation entered."
+          ]
+        },
+        {
+          "heading": "The proposals",
+          "points": [
+            "A nitrogen ice fragment, a hydrogen iceberg, or a very porous fractal dust aggregate.",
+            "One high-profile suggestion was an artificial light sail - a minority position among astronomers.",
+            "Several natural models reproduce the acceleration without anything exotic."
+          ]
+        },
+        {
+          "heading": "Why it still matters",
+          "points": [
+            "A second interstellar object, 2I/Borisov, arrived in 2019 and looked like an ordinary comet.",
+            "Upcoming surveys should find many more, which is how anomalies become statistics.",
+            "'Oumuamua is best understood as our first, badly-timed glimpse of a whole new population."
+          ]
+        }
+      ],
+      "visual_queries": ["oumuamua", "interstellar object", "comet nucleus", "asteroid rotating", "solar system orbits"],
+      "tags": ["oumuamua", "interstellar object", "borisov", "solar system", "astronomy mystery"]
+    },
+    {
+      "id": "t010",
+      "title": "There Is an Ocean Under the Ice of Europa",
+      "angle": "discovery",
+      "hook": "Beneath twenty kilometres of ice on a moon of Jupiter, there is more liquid water than in every ocean on Earth combined.",
+      "promise": "How we know it is there without ever landing, and what would have to be true for something to live in it.",
+      "beats": [
+        {
+          "heading": "The smoothest surface in the solar system",
+          "points": [
+            "Europa has remarkably few impact craters, meaning its surface is geologically young.",
+            "It is covered in long cracks and ridges that suggest a shell in motion.",
+            "Something underneath is resurfacing it."
+          ]
+        },
+        {
+          "heading": "The magnetic giveaway",
+          "points": [
+            "Galileo spacecraft data showed Europa responding to Jupiter's magnetic field.",
+            "That response is best explained by a global layer of electrically conductive salty water.",
+            "This is indirect evidence, but it is strong and independent of surface appearance."
+          ]
+        },
+        {
+          "heading": "Where the heat comes from",
+          "points": [
+            "Europa is far too distant for sunlight to keep water liquid.",
+            "Jupiter's gravity flexes the moon, and that flexing generates internal heat.",
+            "The same mechanism drives extreme volcanism on neighbouring Io."
+          ]
+        },
+        {
+          "heading": "What life would need",
+          "points": [
+            "Liquid water, an energy source, and the right chemical elements.",
+            "Earth's deep-sea vent ecosystems survive with no sunlight at all.",
+            "Whether Europa has comparable chemistry is exactly what we do not yet know."
+          ]
+        },
+        {
+          "heading": "Going to look",
+          "points": [
+            "Europa Clipper and JUICE are designed to study the ice shell and the ocean beneath it.",
+            "Neither is a life-detection mission - they are habitability missions.",
+            "That distinction is the difference between science and a headline."
+          ]
+        }
+      ],
+      "visual_queries": ["europa moon", "jupiter moons", "europa surface ice", "enceladus plumes", "galileo spacecraft"],
+      "tags": ["europa", "jupiter", "subsurface ocean", "astrobiology", "europa clipper"]
+    },
+    {
+      "id": "t011",
+      "title": "The Biggest Black Hole Ever Found Breaks Physics",
+      "angle": "scale",
+      "hook": "There is a black hole so large that light needs weeks just to cross it. Our entire solar system would fit inside with room to spare.",
+      "promise": "We will build up to it in steps, and then explain the part nobody has fully solved - how it got so big so fast.",
+      "beats": [
+        {
+          "heading": "The ones stars leave behind",
+          "points": [
+            "A massive star's core collapses and produces a black hole a few times the Sun's mass.",
+            "Its event horizon would be a few tens of kilometres across.",
+            "This is the ordinary, well-understood kind."
+          ]
+        },
+        {
+          "heading": "The one at our centre",
+          "points": [
+            "Sagittarius A* holds roughly four million solar masses.",
+            "We have imaged its shadow using a planet-wide network of radio telescopes.",
+            "Almost every large galaxy appears to host one."
+          ]
+        },
+        {
+          "heading": "The monsters",
+          "points": [
+            "Quasars are powered by black holes billions of times the Sun's mass.",
+            "TON 618 is estimated in the tens of billions of solar masses.",
+            "Its horizon would comfortably swallow the entire solar system."
+          ]
+        },
+        {
+          "heading": "The actual problem",
+          "points": [
+            "Some enormous black holes are observed very early in cosmic history.",
+            "There may not have been enough time to grow them by ordinary accretion.",
+            "Proposed solutions include direct collapse of huge gas clouds, or primordial seeds."
+          ]
+        },
+        {
+          "heading": "Why size is misleading",
+          "points": [
+            "Black holes are not solid objects - the size quoted is the horizon, not a surface.",
+            "Larger black holes actually have gentler tidal forces at the horizon.",
+            "The biggest ones are, in a strict sense, the safest to approach."
+          ]
+        }
+      ],
+      "visual_queries": ["supermassive black hole", "quasar", "sagittarius a star image", "black hole jet", "galaxy active nucleus"],
+      "tags": ["ton 618", "supermassive black hole", "quasar", "sagittarius a star", "astrophysics"]
+    },
+    {
+      "id": "t012",
+      "title": "What If the Sun Disappeared Right Now?",
+      "angle": "what_if",
+      "hook": "For eight minutes and twenty seconds, nobody on Earth would notice anything at all.",
+      "promise": "A minute-by-minute timeline of what would actually happen, in order, with the physics behind each step.",
+      "beats": [
+        {
+          "heading": "The delay",
+          "points": [
+            "Light takes about 8 minutes 20 seconds to reach Earth.",
+            "Gravitational changes also propagate at light speed.",
+            "So for those minutes, the sky would look completely normal."
+          ]
+        },
+        {
+          "heading": "The lights go out",
+          "points": [
+            "The Sun would vanish from the sky mid-sentence.",
+            "The planets would still be visible briefly, lit by light already in transit.",
+            "Then the solar system would go dark."
+          ]
+        },
+        {
+          "heading": "Earth stops turning a corner",
+          "points": [
+            "Without the Sun's gravity, Earth would stop curving and travel in a straight line.",
+            "It would leave at roughly 30 kilometres per second, tangent to its old orbit.",
+            "There would be no violent lurch - just a change of direction."
+          ]
+        },
+        {
+          "heading": "The freeze",
+          "points": [
+            "Surface temperatures would drop quickly, with oceans freezing from the top down.",
+            "An ice cap would insulate the water below for a surprisingly long time.",
+            "Geothermal heat and deep-sea vent ecosystems would be the last holdouts."
+          ]
+        },
+        {
+          "heading": "Why this cannot happen",
+          "points": [
+            "Mass cannot simply vanish - energy and momentum are conserved.",
+            "The thought experiment is useful precisely because it isolates one variable.",
+            "The real fate of the Sun is a red giant phase in about five billion years."
+          ]
+        }
+      ],
+      "visual_queries": ["sun solar activity", "earth from space night", "frozen earth", "solar eclipse", "solar system orbits"],
+      "tags": ["what if sun disappeared", "sun", "gravity", "speed of light", "thought experiment"]
+    },
+    {
+      "id": "t013",
+      "title": "The Planet Where It Rains Glass Sideways",
+      "angle": "discovery",
+      "hook": "There is a world where the wind blows at seven thousand kilometres per hour and the rain is made of molten glass.",
+      "promise": "Five real exoplanets that are more hostile than anything science fiction invented - and how we measured them from light years away.",
+      "beats": [
+        {
+          "heading": "How we study a planet we cannot see",
+          "points": [
+            "When a planet crosses its star, some starlight filters through its atmosphere.",
+            "Different molecules absorb different wavelengths, leaving a chemical fingerprint.",
+            "We are reading atmospheres from a dip in brightness."
+          ]
+        },
+        {
+          "heading": "The glass rain world",
+          "points": [
+            "HD 189733b is a hot Jupiter orbiting extremely close to its star.",
+            "Models based on its observed spectrum suggest silicate particles in the atmosphere.",
+            "Combined with enormous wind speeds, that implies glassy particles driven almost horizontally."
+          ]
+        },
+        {
+          "heading": "The one that is falling apart",
+          "points": [
+            "Some planets orbit so close that their atmospheres are actively boiling away.",
+            "We detect long tails of escaping gas trailing behind them.",
+            "They are being slowly stripped to their cores."
+          ]
+        },
+        {
+          "heading": "The eternal day and night",
+          "points": [
+            "Tidally locked planets keep one face permanently toward their star.",
+            "That creates a scorched dayside, a frozen nightside, and a narrow twilight ring.",
+            "Whether that ring could be habitable is an open question."
+          ]
+        },
+        {
+          "heading": "Reading the caveats",
+          "points": [
+            "Much of this comes from atmospheric modelling, not direct imaging.",
+            "Interpretations get revised as instruments improve - and several already have.",
+            "The honest framing is 'our best current model says', not 'we have seen'."
+          ]
+        }
+      ],
+      "visual_queries": ["exoplanet hot jupiter", "exoplanet atmosphere", "tidally locked planet", "transit method", "exoplanet artist concept"],
+      "tags": ["exoplanets", "hot jupiter", "hd 189733b", "planetary atmospheres", "transit spectroscopy"]
+    },
+    {
+      "id": "t014",
+      "title": "Voyager 1 Is Still Talking to Us",
+      "angle": "discovery",
+      "hook": "A spacecraft built before the home computer is now twenty-four billion kilometres away, and it still answers when we call.",
+      "promise": "Where it is, what it is still measuring, and the moment we will lose it for good.",
+      "beats": [
+        {
+          "heading": "Launched in 1977",
+          "points": [
+            "Voyager 1 carries less computing power than a modern key fob.",
+            "It used a rare planetary alignment to slingshot outward.",
+            "It was designed for a few years of operation."
+          ]
+        },
+        {
+          "heading": "Leaving the bubble",
+          "points": [
+            "In 2012 instruments recorded a sharp change in the surrounding plasma.",
+            "It had crossed the heliopause, where the Sun's wind gives way to interstellar material.",
+            "It became the first human object in interstellar space."
+          ]
+        },
+        {
+          "heading": "Talking across a day of distance",
+          "points": [
+            "A radio signal now needs around 22 to 23 hours each way.",
+            "The received signal is extraordinarily faint and needs enormous ground antennas.",
+            "Every command is a conversation with roughly two days of lag."
+          ]
+        },
+        {
+          "heading": "Running out of power",
+          "points": [
+            "Its plutonium power source decays a little every year.",
+            "Instruments and heaters have been switched off one by one to stretch the budget.",
+            "Sometime in the 2030s the last instrument goes quiet."
+          ]
+        },
+        {
+          "heading": "After the silence",
+          "points": [
+            "It carries a golden record of sounds and images from Earth.",
+            "It will drift for billions of years, outlasting almost everything we have built.",
+            "It is not aimed at anyone. It is a message in a bottle with no addressee."
+          ]
+        }
+      ],
+      "visual_queries": ["voyager spacecraft", "voyager golden record", "heliosphere", "deep space network antenna", "outer solar system"],
+      "tags": ["voyager 1", "interstellar space", "heliopause", "golden record", "nasa"]
+    },
+    {
+      "id": "t015",
+      "title": "95% of the Universe Is Missing",
+      "angle": "mystery",
+      "hook": "Everything you have ever seen, touched, or measured makes up about five percent of the universe. The rest has never been detected directly.",
+      "promise": "What the missing parts are called, what evidence forces us to accept them, and the honest chance that we are simply wrong.",
+      "beats": [
+        {
+          "heading": "Galaxies spin too fast",
+          "points": [
+            "Stars at the edges of galaxies orbit faster than the visible mass can explain.",
+            "By the visible matter alone, those galaxies should fly apart.",
+            "Something with mass is there that does not emit light."
+          ]
+        },
+        {
+          "heading": "Independent confirmations",
+          "points": [
+            "Gravitational lensing shows more mass bending light than we can see.",
+            "The cosmic microwave background's pattern requires a non-luminous matter component.",
+            "Separate lines of evidence agreeing is what makes this hard to dismiss."
+          ]
+        },
+        {
+          "heading": "And then expansion accelerated",
+          "points": [
+            "Supernova surveys in the 1990s showed distant expansion speeding up, not slowing.",
+            "Whatever drives that is labelled dark energy.",
+            "It appears to make up roughly 68 percent of the total energy budget."
+          ]
+        },
+        {
+          "heading": "Nothing has been caught",
+          "points": [
+            "Decades of increasingly sensitive detectors have not directly detected a dark matter particle.",
+            "The leading candidate categories keep getting constrained.",
+            "That is a genuine problem, not a detail."
+          ]
+        },
+        {
+          "heading": "The alternative",
+          "points": [
+            "Some researchers propose modifying gravity instead of adding matter.",
+            "These models explain some observations well and others poorly.",
+            "'Dark matter' is best read as a placeholder for a measured effect, not a claim about what it is."
+          ]
+        }
+      ],
+      "visual_queries": ["dark matter simulation", "galaxy rotation", "gravitational lensing cluster", "cosmic microwave background map", "bullet cluster"],
+      "tags": ["dark matter", "dark energy", "galaxy rotation", "gravitational lensing", "cosmology"]
+    },
+    {
+      "id": "t016",
+      "title": "If the Universe Is So Big, Where Is Everyone?",
+      "angle": "existential",
+      "hook": "There are more stars in the observable universe than grains of sand on Earth. We have heard from exactly none of them.",
+      "promise": "The actual argument, the most serious proposed answers, and the one that should genuinely worry you.",
+      "beats": [
+        {
+          "heading": "The scale of the problem",
+          "points": [
+            "There are hundreds of billions of galaxies, each with billions of stars.",
+            "Planets appear to be common, and many sit in temperate orbits.",
+            "Even a tiny success rate should produce a crowded galaxy."
+          ]
+        },
+        {
+          "heading": "The silence",
+          "points": [
+            "Decades of radio searches have produced no verified signal.",
+            "No unambiguous artefacts, probes or engineering have been observed.",
+            "This absence of evidence is the whole paradox."
+          ]
+        },
+        {
+          "heading": "Maybe it is hard to start",
+          "points": [
+            "Life might arise rarely, or complex life might be the true bottleneck.",
+            "Earth took billions of years to get past single cells.",
+            "If the filter is behind us, we may simply be early."
+          ]
+        },
+        {
+          "heading": "Maybe it is hard to survive",
+          "points": [
+            "If the filter is ahead of us, civilisations reliably fail at some stage.",
+            "That would mean our own future is the dangerous part.",
+            "This is the version worth taking seriously."
+          ]
+        },
+        {
+          "heading": "Maybe we are looking wrong",
+          "points": [
+            "We have searched a very small slice of frequencies, directions and time.",
+            "Advanced civilisations may not use methods we would recognise.",
+            "Our sample size is effectively one - and drawing conclusions from one is not statistics."
+          ]
+        }
+      ],
+      "visual_queries": ["milky way galaxy", "exoplanet habitable zone", "radio telescope night sky", "star field", "earth from space"],
+      "tags": ["fermi paradox", "great filter", "seti", "extraterrestrial life", "drake equation"]
+    },
+    {
+      "id": "t017",
+      "title": "A Teaspoon of This Star Weighs a Billion Tons",
+      "angle": "scale",
+      "hook": "Take a sugar cube of this material to Earth and it would punch straight through the planet.",
+      "promise": "What neutron stars are, why they are impossible to imagine correctly, and the moment two of them made gold.",
+      "beats": [
+        {
+          "heading": "A city-sized star",
+          "points": [
+            "A neutron star packs more than the Sun's mass into a sphere about 20 kilometres across.",
+            "It is the collapsed core left behind by a supernova.",
+            "Gravity has crushed atoms until electrons and protons merged into neutrons."
+          ]
+        },
+        {
+          "heading": "Spinning impossibly fast",
+          "points": [
+            "Conserving angular momentum through the collapse leaves them rotating extremely rapidly.",
+            "Some complete hundreds of rotations per second.",
+            "Beamed emission makes them appear to pulse, which is why we call them pulsars."
+          ]
+        },
+        {
+          "heading": "Magnetars",
+          "points": [
+            "Some neutron stars have magnetic fields trillions of times Earth's.",
+            "Close enough, such a field would disrupt the chemistry of your body.",
+            "A single starquake on one can outshine a large fraction of the galaxy briefly."
+          ]
+        },
+        {
+          "heading": "When two collide",
+          "points": [
+            "In 2017 gravitational waves and light were detected from a neutron star merger.",
+            "The spectrum showed heavy elements being forged in the debris.",
+            "Events like this are a major source of the gold and platinum in the universe."
+          ]
+        },
+        {
+          "heading": "Wearing a piece of it",
+          "points": [
+            "Some of the heavy metal on Earth traces back to such collisions.",
+            "The atoms in a wedding ring may predate the solar system.",
+            "That is not poetry - it is nucleosynthesis."
+          ]
+        }
+      ],
+      "visual_queries": ["neutron star", "pulsar", "magnetar", "neutron star merger", "gravitational waves"],
+      "tags": ["neutron star", "pulsar", "magnetar", "gravitational waves", "nucleosynthesis"]
+    },
+    {
+      "id": "t018",
+      "title": "Our Galaxy Is Going to Crash Into Another One",
+      "angle": "existential",
+      "hook": "Andromeda is heading straight for us at four hundred thousand kilometres per hour. It is one of the few things in the sky getting closer, not further away.",
+      "promise": "What actually happens when two galaxies collide, on what timeline, and why almost nothing gets hit.",
+      "beats": [
+        {
+          "heading": "Blueshifted",
+          "points": [
+            "Almost every distant galaxy is redshifted, moving away from us.",
+            "Andromeda is blueshifted - it is approaching.",
+            "Local gravity beats cosmic expansion at short range."
+          ]
+        },
+        {
+          "heading": "The timeline",
+          "points": [
+            "First contact is expected in roughly four to four and a half billion years.",
+            "Full merging takes billions of years more.",
+            "The Sun will be nearing the end of its life around the same era."
+          ]
+        },
+        {
+          "heading": "Almost nothing collides",
+          "points": [
+            "Galaxies are overwhelmingly empty space between stars.",
+            "Direct stellar collisions are extraordinarily unlikely.",
+            "What actually happens is gravitational reshaping, not smashing."
+          ]
+        },
+        {
+          "heading": "The night sky changes",
+          "points": [
+            "Tidal forces would fling stars into long streams and trigger bursts of star formation.",
+            "The familiar Milky Way band would be replaced by a distorted, brighter structure.",
+            "The result is expected to be a single large elliptical galaxy."
+          ]
+        },
+        {
+          "heading": "Where the Sun ends up",
+          "points": [
+            "Our system will most likely be flung to a different orbit, possibly much farther out.",
+            "Being ejected entirely is possible but not the most likely outcome.",
+            "Either way, Earth will not survive the Sun long enough for anyone to watch."
+          ]
+        }
+      ],
+      "visual_queries": ["andromeda galaxy", "galaxy collision simulation", "interacting galaxies", "milky way night sky", "elliptical galaxy"],
+      "tags": ["andromeda", "galaxy collision", "milkomeda", "milky way", "deep time"]
+    },
+    {
+      "id": "t019",
+      "title": "There Might Be a Ninth Planet Out There",
+      "angle": "mystery",
+      "hook": "Something in the outer solar system is herding distant objects into the same tilted orbits. We have never seen it.",
+      "promise": "The evidence for a hidden planet, the strongest counter-arguments, and how the question gets settled.",
+      "beats": [
+        {
+          "heading": "A pattern in the dark",
+          "points": [
+            "Several extreme trans-Neptunian objects share a similar orbital orientation.",
+            "Random scattering would not naturally produce that clustering.",
+            "One explanation is the gravity of an unseen massive body."
+          ]
+        },
+        {
+          "heading": "What it would be like",
+          "points": [
+            "Proposed masses are several times Earth's, on a very distant, elongated orbit.",
+            "An orbital period of thousands of years would make it extremely faint and slow-moving.",
+            "That combination is exactly what makes it hard to find."
+          ]
+        },
+        {
+          "heading": "Why many are unconvinced",
+          "points": [
+            "The clustering may be an artefact of where and when surveys happened to look.",
+            "Alternative models explain the orbits without a new planet.",
+            "Targeted searches have so far come up empty."
+          ]
+        },
+        {
+          "heading": "The history of this argument",
+          "points": [
+            "Neptune was successfully predicted from orbital discrepancies before being observed.",
+            "A predicted planet inside Mercury's orbit turned out not to exist - relativity explained the data instead.",
+            "So this method has a genuine hit and a genuine miss."
+          ]
+        },
+        {
+          "heading": "How we find out",
+          "points": [
+            "New wide-field surveys will map the outer solar system far more completely.",
+            "Either something turns up, or the clustering dissolves as the sample grows.",
+            "This is a rare case where a clean answer is genuinely close."
+          ]
+        }
+      ],
+      "visual_queries": ["planet nine artist concept", "kuiper belt", "outer solar system orbits", "neptune", "trans neptunian object"],
+      "tags": ["planet nine", "kuiper belt", "trans neptunian objects", "solar system", "astronomy"]
+    },
+    {
+      "id": "t020",
+      "title": "The Solar Storm That Nearly Ended Modern Life",
+      "angle": "threat",
+      "hook": "In 1859 telegraph wires threw sparks and operators sent messages with the batteries disconnected. If it happened today, it would be far worse.",
+      "promise": "What a Carrington-class event does to a wired planet, how likely it is, and what actually protects us.",
+      "beats": [
+        {
+          "heading": "What happened in 1859",
+          "points": [
+            "A powerful eruption from the Sun struck Earth's magnetic field.",
+            "Auroras were reported at tropical latitudes.",
+            "Telegraph systems - the only electrical grid of the time - failed and in places caught fire."
+          ]
+        },
+        {
+          "heading": "The mechanism",
+          "points": [
+            "A coronal mass ejection hurls billions of tons of magnetised plasma outward.",
+            "If it hits Earth, it distorts our magnetic field.",
+            "A shifting magnetic field induces currents in long conductors - which is what a power grid is."
+          ]
+        },
+        {
+          "heading": "Why today is more fragile",
+          "points": [
+            "Continent-spanning grids, satellites, GPS timing and undersea cables did not exist in 1859.",
+            "Large transformers are custom-built and slow to replace.",
+            "The vulnerability is not the storm - it is the length of our wires."
+          ]
+        },
+        {
+          "heading": "The near miss",
+          "points": [
+            "In July 2012 a very large ejection crossed Earth's orbital path.",
+            "Earth was not at that point in its orbit at the time.",
+            "It was a matter of about a week of timing."
+          ]
+        },
+        {
+          "heading": "What helps",
+          "points": [
+            "Space-weather satellites give a short warning, typically tens of minutes to hours.",
+            "Grid operators can reconfigure and take equipment offline in advance.",
+            "This is a genuinely solvable engineering problem, not a doomsday."
+          ]
+        }
+      ],
+      "visual_queries": ["solar flare", "coronal mass ejection", "aurora from space", "sun surface activity", "solar dynamics observatory"],
+      "tags": ["carrington event", "solar storm", "coronal mass ejection", "space weather", "geomagnetic storm"]
+    },
+    {
+      "id": "t021",
+      "title": "The Coldest Place in the Universe Is Not Where You Think",
+      "angle": "scale",
+      "hook": "Empty space is about minus 270 degrees. There is a cloud of gas out there that is colder than empty space, and it made itself that way.",
+      "promise": "How something gets colder than its own surroundings, and where the actual record sits.",
+      "beats": [
+        {
+          "heading": "The floor of the universe",
+          "points": [
+            "The cosmic microwave background keeps deep space at roughly 2.7 kelvin.",
+            "Nothing passively cools below that, because the background keeps warming it.",
+            "To go colder you need an active process."
+          ]
+        },
+        {
+          "heading": "The Boomerang Nebula",
+          "points": [
+            "Gas is expanding away from a dying star extremely rapidly.",
+            "Rapid expansion causes cooling, the same principle as a spray can turning cold.",
+            "It has been measured at around 1 kelvin - colder than the background."
+          ]
+        },
+        {
+          "heading": "Beaten in a laboratory",
+          "points": [
+            "Physicists on Earth routinely reach billionths of a degree above absolute zero.",
+            "The Cold Atom Laboratory does this aboard the space station.",
+            "The coldest known places in the universe are therefore man-made."
+          ]
+        },
+        {
+          "heading": "Why absolute zero is unreachable",
+          "points": [
+            "Temperature is the motion of particles, and removing all motion is forbidden by quantum mechanics.",
+            "You can approach it indefinitely but never arrive.",
+            "The last fraction of a degree costs more than all the rest combined."
+          ]
+        }
+      ],
+      "visual_queries": ["boomerang nebula", "planetary nebula", "cold atom laboratory", "expanding gas nebula", "hubble nebula"],
+      "tags": ["coldest place", "boomerang nebula", "absolute zero", "cryogenics", "astronomy"]
+    },
+    {
+      "id": "t022",
+      "title": "Saturn Is Losing Its Rings",
+      "angle": "discovery",
+      "hook": "The most recognisable object in the solar system is temporary. Saturn's rings are draining into the planet as you watch.",
+      "promise": "How fast they are going, how we measured it, and the unsettling possibility that they are younger than dinosaurs.",
+      "beats": [
+        {
+          "heading": "Ring rain",
+          "points": [
+            "Spacecraft detected material falling from the rings into Saturn's upper atmosphere.",
+            "Saturn's magnetic field channels charged ring particles inward.",
+            "The rings are actively eroding."
+          ]
+        },
+        {
+          "heading": "How much time is left",
+          "points": [
+            "Estimates put the remaining lifetime in the range of tens to hundreds of millions of years.",
+            "That is a blink in solar system terms.",
+            "We are alive during the era when Saturn happens to have rings."
+          ]
+        },
+        {
+          "heading": "They may be young",
+          "points": [
+            "Cassini measurements of ring mass and contamination suggest a relatively recent origin.",
+            "Some analyses point to an age of only around a hundred million years.",
+            "That would place their formation after many dinosaurs had already lived and died."
+          ]
+        },
+        {
+          "heading": "Where they came from",
+          "points": [
+            "A leading idea is the tidal destruction of an icy moon that wandered too close.",
+            "Anything inside the Roche limit gets pulled apart into a disc.",
+            "Debate continues, and the age estimate is not universally accepted."
+          ]
+        },
+        {
+          "heading": "Every gas giant has rings",
+          "points": [
+            "Jupiter, Uranus and Neptune all have faint ring systems.",
+            "Saturn's are simply bright, icy and enormous.",
+            "Rings may be a phase every giant planet passes through repeatedly."
+          ]
+        }
+      ],
+      "visual_queries": ["saturn rings", "cassini saturn", "saturn from above", "ring particles", "enceladus saturn"],
+      "tags": ["saturn", "saturn rings", "cassini", "ring rain", "planetary science"]
+    },
+    {
+      "id": "t023",
+      "title": "There Is a Volcano on Mars Three Times Taller Than Everest",
+      "angle": "scale",
+      "hook": "Stand at the base of Olympus Mons and you could not tell you were on a mountain. Its slope disappears over the horizon.",
+      "promise": "Why Mars grew features this large when Earth never could, and what that says about a dead planet.",
+      "beats": [
+        {
+          "heading": "The size",
+          "points": [
+            "Olympus Mons rises roughly 22 kilometres above the surrounding plains.",
+            "Its base is about the width of France.",
+            "It is a shield volcano - broad and gently sloped, not a steep cone."
+          ]
+        },
+        {
+          "heading": "Why Mars could build it",
+          "points": [
+            "Earth's crust moves over its hotspots, spreading eruptions into chains of islands.",
+            "Mars appears to lack that kind of plate motion, so eruptions stacked in one place.",
+            "Lower surface gravity also lets a structure grow taller before it collapses."
+          ]
+        },
+        {
+          "heading": "The canyon next door",
+          "points": [
+            "Valles Marineris stretches thousands of kilometres and is several kilometres deep.",
+            "It would span a large part of a continent on Earth.",
+            "It is likely a tectonic rift rather than a river-carved canyon."
+          ]
+        },
+        {
+          "heading": "A planet that stopped",
+          "points": [
+            "Mars appears to have lost most of its internal heat and its global magnetic field.",
+            "Without that field, the solar wind stripped much of the atmosphere.",
+            "The giant volcanoes are monuments to a more active past."
+          ]
+        },
+        {
+          "heading": "Water was there",
+          "points": [
+            "Rovers have found minerals that form in liquid water and ancient riverbed structures.",
+            "Mars was once far wetter than it is now.",
+            "Whether it was ever inhabited is still completely open."
+          ]
+        }
+      ],
+      "visual_queries": ["olympus mons", "valles marineris", "mars surface", "mars global view", "perseverance rover"],
+      "tags": ["olympus mons", "mars", "valles marineris", "volcanoes", "planetary geology"]
+    },
+    {
+      "id": "t024",
+      "title": "What If You Were Exposed to Space Without a Suit?",
+      "angle": "what_if",
+      "hook": "You would not freeze instantly and you would not explode. What actually happens is stranger and faster than either.",
+      "promise": "A second-by-second account based on real decompression data, and the mistake almost every film makes.",
+      "beats": [
+        {
+          "heading": "The first thing to go",
+          "points": [
+            "Holding your breath would rupture your lungs, because the pressure difference has nowhere to go.",
+            "The air in your lungs would need to be exhaled immediately.",
+            "This is the counterintuitive first rule of vacuum exposure."
+          ]
+        },
+        {
+          "heading": "Around ten to fifteen seconds",
+          "points": [
+            "Oxygen leaves the bloodstream rapidly, and useful consciousness lasts only seconds.",
+            "Moisture on the tongue and eyes would begin to boil at body temperature.",
+            "Tissue would swell noticeably as gases come out of solution."
+          ]
+        },
+        {
+          "heading": "Why you do not freeze",
+          "points": [
+            "A vacuum is an excellent insulator - there is no air to carry heat away.",
+            "Heat is lost mainly by radiation, which is slow.",
+            "Sunburn from unfiltered ultraviolet is a faster problem than cold."
+          ]
+        },
+        {
+          "heading": "The survival window",
+          "points": [
+            "Documented accidental exposures suggest survival is possible if repressurisation happens within a minute or two.",
+            "A 1966 vacuum-chamber accident produced a survivor who recalled saliva boiling.",
+            "Beyond a couple of minutes, oxygen starvation causes irreversible damage."
+          ]
+        },
+        {
+          "heading": "What films get wrong",
+          "points": [
+            "Bodies do not rupture, freeze solid on contact, or explode.",
+            "The real danger is simple, fast asphyxiation.",
+            "The truth is less dramatic and considerably more disturbing."
+          ]
+        }
+      ],
+      "visual_queries": ["astronaut spacewalk", "spacesuit", "vacuum chamber test", "international space station", "earth from orbit"],
+      "tags": ["vacuum exposure", "spacewalk", "decompression", "human spaceflight", "space medicine"]
+    },
+    {
+      "id": "t025",
+      "title": "The Fastest Thing Ever Recorded Hitting Earth",
+      "angle": "mystery",
+      "hook": "In 1991 a single subatomic particle struck the atmosphere carrying the energy of a fast-pitched baseball. Nothing we know should be able to do that.",
+      "promise": "What cosmic rays are, why this one broke the rules, and why its source remains unidentified.",
+      "beats": [
+        {
+          "heading": "The detection",
+          "points": [
+            "A detector in Utah recorded a particle with an extraordinary energy for a single nucleus.",
+            "It was nicknamed the Oh-My-God particle.",
+            "It was travelling at very nearly the speed of light."
+          ]
+        },
+        {
+          "heading": "Why that is a problem",
+          "points": [
+            "Very high-energy particles interact with the cosmic microwave background and lose energy over distance.",
+            "That imposes a limit on how far such a particle can travel.",
+            "So the source should be relatively nearby - but no obvious candidate lines up."
+          ]
+        },
+        {
+          "heading": "What could accelerate it",
+          "points": [
+            "Candidate sites include supermassive black hole jets, gamma-ray bursts and huge shock fronts.",
+            "Each requires conditions far beyond any particle accelerator we can build.",
+            "Nature is running an accelerator we cannot locate."
+          ]
+        },
+        {
+          "heading": "It kept happening",
+          "points": [
+            "Similar ultra-high-energy events have been recorded since, including the Amaterasu particle in 2023.",
+            "Several appear to arrive from directions with no promising source.",
+            "The mystery has become better documented rather than solved."
+          ]
+        },
+        {
+          "heading": "Harmless to you",
+          "points": [
+            "These particles hit the upper atmosphere and produce a cascade of secondary particles.",
+            "The atmosphere absorbs them long before the surface.",
+            "You are being showered with cosmic ray debris constantly and safely."
+          ]
+        }
+      ],
+      "visual_queries": ["cosmic ray shower", "particle detector array", "gamma ray burst", "active galactic nucleus jet", "earth atmosphere from space"],
+      "tags": ["cosmic rays", "oh my god particle", "amaterasu particle", "high energy astrophysics", "particle physics"]
+    },
+    {
+      "id": "t026",
+      "title": "Time Runs Slower at Your Feet Than at Your Head",
+      "angle": "discovery",
+      "hook": "This is not a theory or a thought experiment. It has been measured, over a height difference of one centimetre.",
+      "promise": "Why gravity slows time, the experiments that proved it, and the everyday technology that would fail without the correction.",
+      "beats": [
+        {
+          "heading": "The claim",
+          "points": [
+            "General relativity predicts that clocks deeper in a gravitational field tick slower.",
+            "Closer to Earth means slower time.",
+            "The effect is tiny but not negligible."
+          ]
+        },
+        {
+          "heading": "The measurement",
+          "points": [
+            "Optical atomic clocks are precise enough to detect differences over centimetres of height.",
+            "Experiments have confirmed the predicted shift repeatedly.",
+            "This is one of the most tested predictions in physics."
+          ]
+        },
+        {
+          "heading": "Satellites feel it more",
+          "points": [
+            "Navigation satellites experience both weaker gravity and high orbital speed.",
+            "The two effects act in opposite directions and do not cancel.",
+            "The net difference is tens of microseconds per day."
+          ]
+        },
+        {
+          "heading": "Why that matters to you",
+          "points": [
+            "Satellite navigation converts timing into distance, so microseconds become kilometres.",
+            "Without relativistic corrections, positioning would drift badly within a day.",
+            "Relativity is not exotic - it is inside your phone."
+          ]
+        },
+        {
+          "heading": "Taken to extremes",
+          "points": [
+            "Near a black hole's horizon the effect becomes enormous.",
+            "An observer falling in and a distant observer disagree completely about elapsed time.",
+            "Neither is mistaken. Simultaneity simply is not universal."
+          ]
+        }
+      ],
+      "visual_queries": ["atomic clock", "gps satellite", "earth gravity field", "black hole time dilation", "einstein relativity"],
+      "tags": ["time dilation", "general relativity", "atomic clocks", "gps", "einstein"]
+    },
+    {
+      "id": "t027",
+      "title": "The Moon Is Slowly Escaping",
+      "angle": "existential",
+      "hook": "The Moon moves about four centimetres farther away every year. We know because we bounce lasers off mirrors left there.",
+      "promise": "How that drift was measured, what it is doing to our days, and what Earth loses when the Moon is gone.",
+      "beats": [
+        {
+          "heading": "How we know",
+          "points": [
+            "Apollo missions left retroreflectors on the lunar surface.",
+            "Observatories fire lasers at them and time the round trip.",
+            "The distance is known to within millimetres."
+          ]
+        },
+        {
+          "heading": "Why it is leaving",
+          "points": [
+            "The Moon raises tides, and Earth's rotation drags those bulges ahead of it.",
+            "That misalignment transfers rotational energy to the Moon's orbit.",
+            "Earth spins slower and the Moon climbs higher."
+          ]
+        },
+        {
+          "heading": "Days used to be shorter",
+          "points": [
+            "Fossil and sediment records indicate substantially shorter days in the deep past.",
+            "Early in Earth's history a day may have lasted only a handful of hours.",
+            "Our 24-hour day is a snapshot, not a constant."
+          ]
+        },
+        {
+          "heading": "What the Moon does for us",
+          "points": [
+            "It helps stabilise Earth's axial tilt, which moderates long-term climate swings.",
+            "It drives the tides that shape coastal ecosystems.",
+            "Total solar eclipses are possible only because of the current distance ratio."
+          ]
+        },
+        {
+          "heading": "The end of eclipses",
+          "points": [
+            "As the Moon recedes, it will eventually be too small in the sky to fully cover the Sun.",
+            "That is hundreds of millions of years away.",
+            "We happen to live in the era when the geometry works perfectly."
+          ]
+        }
+      ],
+      "visual_queries": ["moon surface", "apollo landing site", "lunar laser ranging", "solar eclipse from space", "earth and moon"],
+      "tags": ["moon", "lunar recession", "tidal locking", "solar eclipse", "apollo"]
+    },
+    {
+      "id": "t028",
+      "title": "Jupiter Has Been Protecting Us for Four Billion Years",
+      "angle": "threat",
+      "hook": "Something the size of Earth hit Jupiter and we watched it happen. That impact was very likely meant for us.",
+      "promise": "How Jupiter shapes the inner solar system, and the uncomfortable finding that it may not be purely a shield.",
+      "beats": [
+        {
+          "heading": "The impact we witnessed",
+          "points": [
+            "In 1994 comet Shoemaker-Levy 9 broke apart and struck Jupiter.",
+            "The impact scars were larger than Earth and visible for months.",
+            "It was the first planetary collision humans ever observed live."
+          ]
+        },
+        {
+          "heading": "The gravitational vacuum cleaner idea",
+          "points": [
+            "Jupiter's enormous mass deflects or captures incoming bodies.",
+            "It has been credited with reducing the impact rate on the inner planets.",
+            "This is the popular version of the story."
+          ]
+        },
+        {
+          "heading": "The complication",
+          "points": [
+            "Simulations suggest Jupiter also perturbs objects into Earth-crossing paths.",
+            "It both removes and creates hazards.",
+            "The net effect is genuinely debated among researchers."
+          ]
+        },
+        {
+          "heading": "It rearranged everything",
+          "points": [
+            "Models of early migration suggest Jupiter's movement reshuffled the young solar system.",
+            "That migration likely influenced the asteroid belt and the delivery of water to Earth.",
+            "Our planet's composition is partly a side effect of Jupiter's wandering."
+          ]
+        },
+        {
+          "heading": "The storm that will not stop",
+          "points": [
+            "The Great Red Spot has persisted for centuries.",
+            "Observations show it has been shrinking and changing shape.",
+            "Why it is so stable at all is still not fully explained."
+          ]
+        }
+      ],
+      "visual_queries": ["jupiter", "great red spot", "shoemaker levy impact", "juno jupiter images", "asteroid belt"],
+      "tags": ["jupiter", "shoemaker levy 9", "great red spot", "asteroid impacts", "solar system formation"]
+    },
+    {
+      "id": "t029",
+      "title": "We Have Only Explored 5% of the Ocean but Mapped All of Mars",
+      "angle": "mystery",
+      "hook": "We have better maps of the surface of Mars than of our own seafloor. There is a reason, and it is not lack of interest.",
+      "promise": "Why the deep ocean is harder to reach than another planet, and what that comparison actually reveals.",
+      "beats": [
+        {
+          "heading": "The pressure problem",
+          "points": [
+            "At the deepest trenches, pressure exceeds a thousand times that at sea level.",
+            "Vacuum requires holding one atmosphere in; the deep sea requires holding hundreds out.",
+            "Engineering against crushing is harder than engineering against emptiness."
+          ]
+        },
+        {
+          "heading": "You cannot see through water",
+          "points": [
+            "Orbital cameras map planetary surfaces quickly because vacuum is transparent.",
+            "Water absorbs light and blocks radio, so mapping needs sonar from close range.",
+            "That means covering the seafloor ship by ship, line by line."
+          ]
+        },
+        {
+          "heading": "Where the 5% figure comes from",
+          "points": [
+            "Most of the ocean floor has only coarse satellite-derived depth estimates.",
+            "High-resolution direct mapping still covers a minority of the seabed.",
+            "International efforts are working to complete a full high-resolution map."
+          ]
+        },
+        {
+          "heading": "What we keep finding",
+          "points": [
+            "Hydrothermal vent ecosystems survive with no sunlight, using chemical energy.",
+            "Their discovery expanded what counts as a habitable environment.",
+            "That directly reshaped where we look for life off Earth."
+          ]
+        },
+        {
+          "heading": "The connection to space",
+          "points": [
+            "Europa and Enceladus are ice-covered ocean worlds.",
+            "Understanding Earth's deep ocean is how we learn what to look for there.",
+            "Ocean exploration and space exploration are the same question asked twice."
+          ]
+        }
+      ],
+      "visual_queries": ["earth ocean from space", "mars global map", "enceladus plumes", "hydrothermal vent", "europa ice surface"],
+      "tags": ["ocean exploration", "mars mapping", "hydrothermal vents", "ocean worlds", "astrobiology"]
+    },
+    {
+      "id": "t030",
+      "title": "The First Stars Were Monsters",
+      "angle": "discovery",
+      "hook": "The earliest stars may have been hundreds of times the mass of the Sun, and they lived and died before the universe was a bad habit.",
+      "promise": "Why the first generation had to be enormous, why we have never seen one, and how they built everything you are made of.",
+      "beats": [
+        {
+          "heading": "A universe of two elements",
+          "points": [
+            "After the Big Bang there was essentially only hydrogen and helium.",
+            "No carbon, no oxygen, no iron - and no dust.",
+            "That composition changes how gas clouds can collapse."
+          ]
+        },
+        {
+          "heading": "Why they grew so large",
+          "points": [
+            "Heavier elements help gas radiate heat away and fragment into smaller stars.",
+            "Without them, clouds cooled inefficiently and collapsed into very massive objects.",
+            "Models suggest masses far above anything forming today."
+          ]
+        },
+        {
+          "heading": "Brief and violent",
+          "points": [
+            "The most massive stars burn through fuel fastest, living only millions of years.",
+            "They ended in enormous explosions, seeding space with heavy elements.",
+            "The entire first generation was gone almost immediately in cosmic terms."
+          ]
+        },
+        {
+          "heading": "Why we cannot see them",
+          "points": [
+            "Their light is stretched far into the infrared and is extremely faint.",
+            "No confirmed individual first-generation star has been observed.",
+            "Webb was built partly to hunt for their signatures."
+          ]
+        },
+        {
+          "heading": "You are the evidence",
+          "points": [
+            "Every atom heavier than helium in your body was made inside a star.",
+            "The chain of enrichment starts with that first generation.",
+            "They are the reason chemistry, and therefore you, are possible."
+          ]
+        }
+      ],
+      "visual_queries": ["first stars simulation", "star forming region", "webb infrared galaxies", "supernova remnant", "cosmic dawn"],
+      "tags": ["population iii stars", "first stars", "cosmic dawn", "nucleosynthesis", "jwst"]
+    },
+    {
+      "id": "t031",
+      "title": "There Are Planets With No Star at All",
+      "angle": "existential",
+      "hook": "There may be more planets drifting alone in the dark between stars than there are planets orbiting them.",
+      "promise": "How you detect a world that emits no light, how many there might be, and whether any could support life.",
+      "beats": [
+        {
+          "heading": "Thrown out",
+          "points": [
+            "Young planetary systems are gravitationally chaotic.",
+            "Close encounters can eject a planet entirely.",
+            "Others may form directly in isolation, never bound to a star."
+          ]
+        },
+        {
+          "heading": "Finding the invisible",
+          "points": [
+            "A rogue planet passing in front of a distant star bends and briefly brightens its light.",
+            "This gravitational microlensing produces a characteristic short flash.",
+            "Surveys have detected a number of unbound candidates this way."
+          ]
+        },
+        {
+          "heading": "How many",
+          "points": [
+            "Estimates vary widely and remain uncertain.",
+            "Some analyses suggest rogue worlds are comparable in number to bound planets, or more.",
+            "The uncertainty is large and should be stated plainly."
+          ]
+        },
+        {
+          "heading": "Could anything live there",
+          "points": [
+            "Without starlight, the only heat is internal - radioactive decay and leftover formation heat.",
+            "A thick atmosphere or a thick ice shell could trap that heat for a long time.",
+            "A subsurface ocean on a starless world is speculative but not absurd."
+          ]
+        },
+        {
+          "heading": "The sky from there",
+          "points": [
+            "No sun, no day, no seasons - only stars.",
+            "Surface temperatures would sit near the cosmic background.",
+            "These may be the most common kind of world, and we have barely begun to count them."
+          ]
+        }
+      ],
+      "visual_queries": ["rogue planet artist concept", "gravitational microlensing", "exoplanet dark", "star field deep space", "planet formation disk"],
+      "tags": ["rogue planets", "free floating planets", "microlensing", "exoplanets", "astrobiology"]
+    },
+    {
+      "id": "t032",
+      "title": "Earth Is Surrounded by a Cloud of Its Own Garbage",
+      "angle": "threat",
+      "hook": "There are millions of pieces of debris in orbit travelling ten times faster than a rifle bullet. A fragment the size of a coin can destroy a satellite.",
+      "promise": "What is actually up there, the chain reaction scenario that worries engineers, and what is being done.",
+      "beats": [
+        {
+          "heading": "The inventory",
+          "points": [
+            "Tens of thousands of objects large enough to track are catalogued.",
+            "Millions of smaller fragments are too small to track but large enough to destroy hardware.",
+            "Orbital speeds mean even tiny objects carry enormous kinetic energy."
+          ]
+        },
+        {
+          "heading": "Where it came from",
+          "points": [
+            "Spent rocket stages, dead satellites and deliberately destroyed satellites.",
+            "Anti-satellite weapon tests have each produced large debris clouds.",
+            "Collisions between existing debris generate still more."
+          ]
+        },
+        {
+          "heading": "The chain reaction",
+          "points": [
+            "Kessler syndrome describes collisions producing debris that causes further collisions.",
+            "Past a threshold the process becomes self-sustaining.",
+            "Some heavily used orbital bands are approaching concerning densities."
+          ]
+        },
+        {
+          "heading": "What we would lose",
+          "points": [
+            "Weather forecasting, navigation, communications, climate monitoring and disaster response.",
+            "Losing low Earth orbit would be an infrastructure failure, not an inconvenience.",
+            "Crewed missions would face unacceptable risk."
+          ]
+        },
+        {
+          "heading": "Fixes in progress",
+          "points": [
+            "Deorbit requirements, end-of-life disposal rules and collision-avoidance manoeuvres.",
+            "Active removal has been demonstrated with nets, harpoons and magnetic capture.",
+            "This is a solvable problem, but only if it is addressed early."
+          ]
+        }
+      ],
+      "visual_queries": ["space debris orbit", "satellite in orbit", "earth orbit visualization", "international space station exterior", "rocket stage separation"],
+      "tags": ["space debris", "kessler syndrome", "orbital debris", "satellites", "low earth orbit"]
+    },
+    {
+      "id": "t033",
+      "title": "The Sun Will Destroy Earth, but Not the Way You Think",
+      "angle": "existential",
+      "hook": "The Sun will not explode. It will do something slower, and Earth becomes uninhabitable long before the dramatic part.",
+      "promise": "The real timeline of the Sun's death and the point at which our planet stops being able to support life.",
+      "beats": [
+        {
+          "heading": "It is getting brighter",
+          "points": [
+            "The Sun's luminosity has been slowly increasing over its lifetime.",
+            "It continues to increase by a small percentage every hundred million years.",
+            "This is a steady, ongoing process."
+          ]
+        },
+        {
+          "heading": "The real deadline",
+          "points": [
+            "Rising output will eventually push Earth past a runaway greenhouse threshold.",
+            "Estimates put the loss of surface oceans on the order of a billion years away.",
+            "Life becomes impossible long before the Sun changes shape."
+          ]
+        },
+        {
+          "heading": "The red giant phase",
+          "points": [
+            "In roughly five billion years, hydrogen in the core runs out.",
+            "The Sun expands enormously, likely engulfing Mercury and Venus.",
+            "Whether it reaches Earth's orbit depends on how much mass it sheds."
+          ]
+        },
+        {
+          "heading": "The quiet ending",
+          "points": [
+            "The outer layers drift away as a planetary nebula.",
+            "The core is left as a white dwarf, roughly Earth-sized.",
+            "It cools slowly for an extraordinarily long time."
+          ]
+        },
+        {
+          "heading": "Not massive enough to explode",
+          "points": [
+            "Supernovae require far more mass than the Sun has.",
+            "Our star will fade rather than detonate.",
+            "The remains of the solar system will orbit a cooling cinder."
+          ]
+        }
+      ],
+      "visual_queries": ["sun surface", "red giant star", "planetary nebula", "white dwarf", "solar dynamics observatory sun"],
+      "tags": ["sun death", "red giant", "white dwarf", "stellar evolution", "future of earth"]
+    },
+    {
+      "id": "t034",
+      "title": "The Star That Dimmed and Started a Global Argument",
+      "angle": "mystery",
+      "hook": "A star two and a half times the size of the Sun kept dimming by twenty percent in patterns nothing could explain. For a while, an alien megastructure was on the table.",
+      "promise": "The actual light curve, why the exotic explanation was taken seriously, and how it was ruled out.",
+      "beats": [
+        {
+          "heading": "The strange light curve",
+          "points": [
+            "Kepler recorded deep, irregular dips in the brightness of KIC 8462852.",
+            "Planets produce shallow, regular, repeating transits. This was neither.",
+            "Some dips removed a large fraction of the star's light."
+          ]
+        },
+        {
+          "heading": "Why megastructures were discussed",
+          "points": [
+            "A partial shell built to collect starlight would block light irregularly.",
+            "It was published as one hypothesis among several, not a conclusion.",
+            "The press reported the hypothesis as if it were a finding."
+          ]
+        },
+        {
+          "heading": "The test that settled it",
+          "points": [
+            "A solid object blocks all wavelengths of light equally.",
+            "Dust blocks blue light more strongly than red.",
+            "Follow-up observations showed wavelength-dependent dimming - the signature of dust."
+          ]
+        },
+        {
+          "heading": "So what is it",
+          "points": [
+            "Leading explanations involve uneven clouds of dust, possibly from a shattered body.",
+            "The exact source of the dust is still not fully pinned down.",
+            "A dust explanation is not the same as a complete explanation."
+          ]
+        },
+        {
+          "heading": "The useful lesson",
+          "points": [
+            "Extraordinary claims were raised, tested and dropped in a few years.",
+            "The system worked exactly as intended.",
+            "Following the evidence to a boring answer is the point, not a disappointment."
+          ]
+        }
+      ],
+      "visual_queries": ["kepler space telescope", "dyson sphere concept", "star dust disk", "exoplanet transit light curve", "debris disk star"],
+      "tags": ["tabbys star", "kic 8462852", "dyson sphere", "kepler", "astronomy mystery"]
+    },
+    {
+      "id": "t035",
+      "title": "Could We Actually Travel to Another Star?",
+      "angle": "what_if",
+      "hook": "The nearest star is four light years away. With our fastest spacecraft, the trip would take longer than human civilisation has existed.",
+      "promise": "Four proposed methods, ranked by how close they are to real, and the physics that limits all of them.",
+      "beats": [
+        {
+          "heading": "The distance problem",
+          "points": [
+            "Proxima Centauri is roughly 4.2 light years away.",
+            "Our fastest probes would need tens of thousands of years to cover that.",
+            "Interstellar distance is the whole difficulty - not engineering detail."
+          ]
+        },
+        {
+          "heading": "Method one - light sails",
+          "points": [
+            "Very small probes could be pushed by powerful ground-based lasers.",
+            "Concepts such as Breakthrough Starshot target a fraction of light speed.",
+            "The physics is sound; the power and precision required are extreme."
+          ]
+        },
+        {
+          "heading": "Method two - nuclear pulse",
+          "points": [
+            "Detonating small nuclear charges behind a pusher plate was studied seriously.",
+            "It is one of the few designs plausibly capable of a few percent of light speed.",
+            "Treaty and contamination issues make it politically impossible."
+          ]
+        },
+        {
+          "heading": "Method three - generation ships",
+          "points": [
+            "Accept the centuries and send a self-sustaining habitat.",
+            "The hard problems become biological, social and ecological rather than propulsive.",
+            "Nobody has ever built a closed ecosystem that stayed stable for long."
+          ]
+        },
+        {
+          "heading": "Method four - warp drives",
+          "points": [
+            "The Alcubierre metric contracts space ahead and expands it behind.",
+            "It requires exotic matter with negative energy density that has never been observed in bulk.",
+            "It is a valid solution in the mathematics, not an engineering path."
+          ]
+        },
+        {
+          "heading": "The honest summary",
+          "points": [
+            "Only the light sail approach is close to testable this century.",
+            "Even that sends grams, not people.",
+            "Interstellar travel is not forbidden by physics. It is forbidden by budget and time."
+          ]
+        }
+      ],
+      "visual_queries": ["light sail spacecraft", "proxima centauri", "interstellar probe concept", "alpha centauri system", "spacecraft propulsion test"],
+      "tags": ["interstellar travel", "breakthrough starshot", "alcubierre drive", "proxima centauri", "generation ship"]
+    },
+    {
+      "id": "t036",
+      "title": "Something Is Pulling Our Galaxy and We Cannot See It",
+      "angle": "mystery",
+      "hook": "The Milky Way is falling toward a point in the sky at two million kilometres per hour. Our own galaxy blocks the view of what is there.",
+      "promise": "How the motion was detected, why we cannot look at it directly, and what the current best answer is.",
+      "beats": [
+        {
+          "heading": "Motion we should not have",
+          "points": [
+            "After subtracting cosmic expansion, the Local Group still has a large residual velocity.",
+            "That means real mass is pulling us.",
+            "The direction points toward the constellation Centaurus."
+          ]
+        },
+        {
+          "heading": "The zone of avoidance",
+          "points": [
+            "The dust and stars of our own galactic plane block that region at visible wavelengths.",
+            "Roughly a fifth of the sky is effectively hidden from optical surveys.",
+            "The target sits inside that blocked band."
+          ]
+        },
+        {
+          "heading": "Looking through the dust",
+          "points": [
+            "X-ray, infrared and radio observations penetrate the obscuring material.",
+            "They revealed large galaxy concentrations behind the plane.",
+            "The Great Attractor turned out to be a real overdensity of galaxies."
+          ]
+        },
+        {
+          "heading": "The bigger pull",
+          "points": [
+            "Much of the motion is now attributed to the more distant Shapley Supercluster.",
+            "The Great Attractor is a waypoint rather than the final destination.",
+            "We are being drawn into a larger flow of matter."
+          ]
+        },
+        {
+          "heading": "We will never arrive",
+          "points": [
+            "Accelerating expansion means distant structures recede faster over time.",
+            "The Local Group will probably never reach it.",
+            "We are falling toward something we are simultaneously being carried away from."
+          ]
+        }
+      ],
+      "visual_queries": ["great attractor region", "galaxy supercluster map", "zone of avoidance infrared", "milky way plane", "galaxy cluster x-ray"],
+      "tags": ["great attractor", "shapley supercluster", "laniakea", "zone of avoidance", "cosmology"]
+    },
+    {
+      "id": "t037",
+      "title": "Titan Has Rivers, Lakes and Rain, but No Water",
+      "angle": "discovery",
+      "hook": "There is a moon with weather, coastlines and river deltas. Everything is made of liquid methane, and it is minus 180 degrees.",
+      "promise": "How a completely alien chemistry produced a landscape that looks like Earth, and what we plan to send there.",
+      "beats": [
+        {
+          "heading": "The only moon with a real atmosphere",
+          "points": [
+            "Titan's atmosphere is denser at the surface than Earth's.",
+            "It is mostly nitrogen, with methane playing the role water plays here.",
+            "A thick orange haze hides the surface at visible wavelengths."
+          ]
+        },
+        {
+          "heading": "A methane cycle",
+          "points": [
+            "Methane evaporates, forms clouds, rains and collects in lakes and seas.",
+            "Cassini radar mapped large hydrocarbon seas near the poles.",
+            "Huygens landed in 2005 on a surface of damp, pebble-strewn material."
+          ]
+        },
+        {
+          "heading": "Familiar shapes, alien materials",
+          "points": [
+            "Dunes, river channels, deltas and shorelines have all been identified.",
+            "The bedrock is water ice, hard as rock at those temperatures.",
+            "The same physics produces recognisable geology from unrecognisable ingredients."
+          ]
+        },
+        {
+          "heading": "Life on different terms",
+          "points": [
+            "Liquid methane could in principle host chemistry unlike anything on Earth.",
+            "There is also likely a water ocean deep beneath the ice shell.",
+            "Both are speculative targets, and neither has any evidence yet."
+          ]
+        },
+        {
+          "heading": "Sending a drone",
+          "points": [
+            "Dragonfly is designed to fly between sites in Titan's thick, low-gravity air.",
+            "Flying is genuinely easier there than on Mars.",
+            "It will sample surface chemistry directly rather than from orbit."
+          ]
+        }
+      ],
+      "visual_queries": ["titan moon", "titan surface huygens", "titan lakes radar", "saturn and titan", "dragonfly mission concept"],
+      "tags": ["titan", "saturn moons", "methane lakes", "dragonfly", "astrobiology"]
+    },
+    {
+      "id": "t038",
+      "title": "Two Numbers in Cosmology Refuse to Agree",
+      "angle": "mystery",
+      "hook": "We can measure how fast the universe is expanding in two independent ways. They give different answers, and improving the measurements made it worse.",
+      "promise": "What the Hubble tension is, why it will not go away, and what it would mean if it is real.",
+      "beats": [
+        {
+          "heading": "Method one - look nearby",
+          "points": [
+            "Certain variable stars and supernovae have predictable intrinsic brightness.",
+            "Comparing that to observed brightness gives distance, and redshift gives speed.",
+            "This builds a distance ladder outward from our neighbourhood."
+          ]
+        },
+        {
+          "heading": "Method two - start from the beginning",
+          "points": [
+            "The cosmic microwave background encodes the early universe's contents precisely.",
+            "Running the standard model forward predicts today's expansion rate.",
+            "This is a completely independent route to the same number."
+          ]
+        },
+        {
+          "heading": "They disagree",
+          "points": [
+            "The two approaches differ by several kilometres per second per megaparsec.",
+            "The gap is now larger than the stated uncertainties.",
+            "That is the definition of a tension rather than a rounding difference."
+          ]
+        },
+        {
+          "heading": "Not going away",
+          "points": [
+            "Better instruments were expected to shrink the gap. They sharpened it instead.",
+            "Multiple independent teams and techniques reproduce the disagreement.",
+            "Systematic error has not been ruled out, but it is getting harder to blame."
+          ]
+        },
+        {
+          "heading": "What it could mean",
+          "points": [
+            "Possibly unaccounted systematics in one of the methods.",
+            "Possibly new physics in the early universe or in dark energy's behaviour.",
+            "This is the most interesting unresolved number in cosmology right now."
+          ]
+        }
+      ],
+      "visual_queries": ["cosmic microwave background planck", "cepheid variable star", "type ia supernova", "hubble space telescope", "expanding universe"],
+      "tags": ["hubble tension", "hubble constant", "cosmology", "dark energy", "cosmic microwave background"]
+    },
+    {
+      "id": "t039",
+      "title": "Every Atom in Your Body Was Made in a Star",
+      "angle": "scale",
+      "hook": "The iron in your blood was forged in a dying star. Most of your hydrogen is older than every star that has ever existed.",
+      "promise": "The exact origin of each element in your body, traced back step by step.",
+      "beats": [
+        {
+          "heading": "Hydrogen came first",
+          "points": [
+            "Hydrogen formed in the first minutes after the Big Bang.",
+            "It makes up about ten percent of your body by mass.",
+            "Those atoms are effectively as old as the universe."
+          ]
+        },
+        {
+          "heading": "Carbon, oxygen and nitrogen",
+          "points": [
+            "These are fused inside stars over millions to billions of years.",
+            "They are dispersed by stellar winds and supernovae.",
+            "Together with hydrogen they make up the overwhelming majority of you."
+          ]
+        },
+        {
+          "heading": "Iron is where fusion stops",
+          "points": [
+            "Fusing iron consumes energy instead of releasing it.",
+            "When a massive core becomes iron, it can no longer support itself and collapses.",
+            "The iron in your blood is the end point of a star's life."
+          ]
+        },
+        {
+          "heading": "The heavy elements",
+          "points": [
+            "Gold, platinum and uranium require far more extreme conditions.",
+            "Neutron star mergers and certain supernovae are major production sites.",
+            "The trace metals in your body come from the most violent events known."
+          ]
+        },
+        {
+          "heading": "Recycled repeatedly",
+          "points": [
+            "The solar system formed from gas already enriched by earlier generations of stars.",
+            "Your atoms have been through multiple stellar life cycles.",
+            "You are not made of star stuff metaphorically. You are made of it literally."
+          ]
+        }
+      ],
+      "visual_queries": ["supernova remnant", "star forming nebula", "neutron star merger", "solar system formation", "crab nebula"],
+      "tags": ["nucleosynthesis", "star stuff", "supernova", "elements", "astrochemistry"]
+    },
+    {
+      "id": "t040",
+      "title": "Venus Is What Happens When a Planet Goes Wrong",
+      "angle": "threat",
+      "hook": "Venus is almost exactly Earth's size, sits in almost the same orbit, and its surface is hot enough to melt lead.",
+      "promise": "How a near-twin of Earth ended up like this, and the one measurement that made scientists briefly hopeful.",
+      "beats": [
+        {
+          "heading": "The conditions",
+          "points": [
+            "Surface temperatures are around 465 degrees Celsius - hotter than Mercury.",
+            "Atmospheric pressure is over ninety times Earth's.",
+            "Clouds of sulphuric acid sit above a crushing carbon dioxide atmosphere."
+          ]
+        },
+        {
+          "heading": "The runaway",
+          "points": [
+            "Rising temperatures evaporated any surface water into the atmosphere.",
+            "Water vapour is itself a greenhouse gas, which raised temperatures further.",
+            "The feedback ran away, and carbon that would have been locked into rock stayed airborne."
+          ]
+        },
+        {
+          "heading": "Why Earth escaped",
+          "points": [
+            "Earth's plate tectonics and oceans cycle carbon back into the mantle.",
+            "That long-term thermostat kept our climate in a narrow band.",
+            "Venus appears to lack an equivalent mechanism."
+          ]
+        },
+        {
+          "heading": "It spins backwards",
+          "points": [
+            "Venus rotates in the opposite direction to most planets, extremely slowly.",
+            "A single Venusian day is longer than its year.",
+            "A giant impact or tidal history are among the proposed causes."
+          ]
+        },
+        {
+          "heading": "The phosphine episode",
+          "points": [
+            "In 2020 a team reported possible phosphine in the clouds, a gas hard to explain without biology.",
+            "Reanalysis by multiple groups disputed the detection.",
+            "It is unresolved and leaning negative - a good example of science correcting in public."
+          ]
+        }
+      ],
+      "visual_queries": ["venus planet", "venus surface radar magellan", "venus clouds", "venus transit", "earth and venus comparison"],
+      "tags": ["venus", "runaway greenhouse", "phosphine", "planetary climate", "solar system"]
+    },
+    {
+      "id": "t041",
+      "title": "Astronauts Come Back Physically Different",
+      "angle": "discovery",
+      "hook": "Spend six months in orbit and your spine lengthens, your eyeballs change shape, and your immune system starts misfiring.",
+      "promise": "What weightlessness actually does to a human body, and which changes do not fully reverse.",
+      "beats": [
+        {
+          "heading": "Bones and muscles disappear",
+          "points": [
+            "Without load, bone density can drop by roughly one percent per month.",
+            "Muscle wastes quickly, especially in the legs and back.",
+            "Hours of daily resistance exercise are required just to slow it."
+          ]
+        },
+        {
+          "heading": "Fluid moves upward",
+          "points": [
+            "Without gravity pulling blood down, fluid shifts toward the head.",
+            "Faces appear puffy and nasal congestion is common.",
+            "Pressure changes appear to flatten the back of the eye, affecting vision."
+          ]
+        },
+        {
+          "heading": "The spine unloads",
+          "points": [
+            "Spinal discs expand, and astronauts measurably gain height.",
+            "The gain reverses after return, sometimes with back pain.",
+            "Post-flight injury risk is elevated for a period."
+          ]
+        },
+        {
+          "heading": "Radiation",
+          "points": [
+            "Low Earth orbit still receives far more radiation than the ground.",
+            "Beyond Earth's magnetic field the dose rises substantially.",
+            "This is one of the central unsolved problems for long Mars missions."
+          ]
+        },
+        {
+          "heading": "Down to the genes",
+          "points": [
+            "Twin studies compared an astronaut in orbit with an identical twin on the ground.",
+            "Thousands of changes in gene expression were observed, most reverting after return.",
+            "Some markers took much longer to normalise, and a few persisted."
+          ]
+        }
+      ],
+      "visual_queries": ["astronaut on space station", "astronaut exercise iss", "iss interior", "spacewalk earth background", "astronaut return capsule"],
+      "tags": ["astronaut health", "microgravity", "space medicine", "iss", "space radiation"]
+    },
+    {
+      "id": "t042",
+      "title": "There Is a Region of Space Almost Completely Empty",
+      "angle": "scale",
+      "hook": "There is a bubble in the universe 330 million light years wide with almost nothing inside it. If we lived at its centre, we would have thought we were alone.",
+      "promise": "How a void that large forms, and the disturbing thought experiment about what we would have concluded from inside one.",
+      "beats": [
+        {
+          "heading": "The discovery",
+          "points": [
+            "Redshift surveys in the early 1980s mapped galaxy positions in three dimensions.",
+            "A vast region in the direction of Bootes contained far fewer galaxies than expected.",
+            "It is not truly empty, but it is drastically underpopulated."
+          ]
+        },
+        {
+          "heading": "How voids form",
+          "points": [
+            "Tiny density variations in the early universe grew under gravity.",
+            "Dense regions pulled matter in; sparse regions emptied further.",
+            "The result is a cosmic web of filaments surrounding enormous voids."
+          ]
+        },
+        {
+          "heading": "Probably several merged",
+          "points": [
+            "The Bootes Void's shape and internal structure suggest it is not a single primordial bubble.",
+            "The leading interpretation is multiple smaller voids that merged.",
+            "That also explains the sparse galaxies scattered inside."
+          ]
+        },
+        {
+          "heading": "The thought experiment",
+          "points": [
+            "An observer at the centre would see essentially nothing for hundreds of millions of light years.",
+            "Extragalactic astronomy would have been far harder to develop.",
+            "Our view of the universe depends on where we happen to sit."
+          ]
+        },
+        {
+          "heading": "Voids are the norm",
+          "points": [
+            "Most of the volume of the universe is void, not filament.",
+            "Galaxies live on the walls and junctions of the web.",
+            "The default state of the universe is emptiness."
+          ]
+        }
+      ],
+      "visual_queries": ["cosmic web simulation", "bootes void", "galaxy redshift survey map", "large scale structure", "sloan digital sky survey"],
+      "tags": ["bootes void", "cosmic void", "cosmic web", "large scale structure", "cosmology"]
+    },
+    {
+      "id": "t043",
+      "title": "Mercury Is Not the Hottest Planet and Has Ice",
+      "angle": "discovery",
+      "hook": "The closest planet to the Sun is not the hottest, and there is frozen water sitting on its surface right now.",
+      "promise": "Four things about Mercury that sound like errors, and the single reason all of them are true.",
+      "beats": [
+        {
+          "heading": "Venus is hotter",
+          "points": [
+            "Mercury reaches around 430 degrees Celsius in daylight.",
+            "Venus sits near 465 degrees, day and night, everywhere.",
+            "Mercury has almost no atmosphere to hold heat; Venus has far too much."
+          ]
+        },
+        {
+          "heading": "It gets brutally cold",
+          "points": [
+            "Night-side temperatures fall to roughly minus 180 degrees Celsius.",
+            "That is the largest surface temperature swing of any planet in the solar system.",
+            "With no atmosphere, heat escapes as soon as the Sun sets."
+          ]
+        },
+        {
+          "heading": "The ice",
+          "points": [
+            "Mercury's axis is barely tilted, so some polar crater floors never see sunlight.",
+            "Radar and spacecraft data indicate water ice in those permanently shadowed regions.",
+            "Ice survives a few kilometres from the hottest terrain in the inner solar system."
+          ]
+        },
+        {
+          "heading": "A day longer than a year",
+          "points": [
+            "Mercury orbits the Sun in about 88 Earth days.",
+            "One solar day there lasts about 176 Earth days.",
+            "It is locked in a 3-to-2 resonance between spin and orbit."
+          ]
+        },
+        {
+          "heading": "It helped prove relativity",
+          "points": [
+            "Mercury's orbit precesses slightly more than Newtonian gravity predicts.",
+            "A hypothetical planet was proposed to explain the discrepancy and never found.",
+            "General relativity accounted for it exactly - one of its first triumphs."
+          ]
+        }
+      ],
+      "visual_queries": ["mercury planet", "messenger mercury images", "mercury craters", "mercury polar ice radar", "sun and mercury"],
+      "tags": ["mercury", "messenger mission", "polar ice", "orbital resonance", "general relativity"]
+    },
+    {
+      "id": "t044",
+      "title": "Pluto Turned Out to Be Alive",
+      "angle": "discovery",
+      "hook": "We expected a dead ball of ice. What arrived in 2015 was a world with mountains, glaciers and a surface younger than the Sahara.",
+      "promise": "What New Horizons actually found, and why it broke the assumption that small and cold means dead.",
+      "beats": [
+        {
+          "heading": "A nine-year flight for one day",
+          "points": [
+            "New Horizons launched in 2006 and reached Pluto in July 2015.",
+            "It flew past at enormous speed - no orbit was possible.",
+            "Returning the data took over a year at that distance."
+          ]
+        },
+        {
+          "heading": "The heart",
+          "points": [
+            "A vast bright basin dominates one hemisphere, informally called Tombaugh Regio.",
+            "Its western lobe is a plain of nitrogen ice with almost no craters.",
+            "Few craters means the surface is being actively renewed."
+          ]
+        },
+        {
+          "heading": "Convection cells",
+          "points": [
+            "The nitrogen plain is divided into polygonal cells tens of kilometres wide.",
+            "They appear to be slowly churning, like an extremely cold lava lamp.",
+            "That requires an internal heat source nobody had budgeted for."
+          ]
+        },
+        {
+          "heading": "Mountains of ice",
+          "points": [
+            "Ranges rise kilometres high, made of water ice acting as bedrock.",
+            "At Pluto's temperatures water ice is rigid enough to form mountains.",
+            "Nitrogen and methane ices behave like the soft, mobile material instead."
+          ]
+        },
+        {
+          "heading": "The lesson",
+          "points": [
+            "Geological activity does not require being large or close to the Sun.",
+            "That expands the range of worlds worth examining closely.",
+            "Whether Pluto is a planet is a labelling argument. What it is, is interesting."
+          ]
+        }
+      ],
+      "visual_queries": ["pluto new horizons", "pluto heart tombaugh regio", "pluto mountains", "charon moon", "kuiper belt object"],
+      "tags": ["pluto", "new horizons", "kuiper belt", "cryovolcanism", "planetary science"]
+    },
+    {
+      "id": "t045",
+      "title": "The Universe Should Not Contain Anything",
+      "angle": "existential",
+      "hook": "The Big Bang should have produced equal amounts of matter and antimatter. They should have annihilated completely. You should not exist.",
+      "promise": "The best-measured unsolved problem in physics, and what a one-in-a-billion imbalance built.",
+      "beats": [
+        {
+          "heading": "Every particle has a mirror",
+          "points": [
+            "Antimatter has the same mass but opposite charge.",
+            "Matter and antimatter annihilate on contact, converting entirely into energy.",
+            "We produce antimatter routinely in accelerators, so this is established fact."
+          ]
+        },
+        {
+          "heading": "The prediction",
+          "points": [
+            "Energy converting into particles should create both types equally.",
+            "The early universe should have annihilated itself into pure radiation.",
+            "The expected leftover matter is essentially zero."
+          ]
+        },
+        {
+          "heading": "But here we are",
+          "points": [
+            "Observations show a universe overwhelmingly made of matter.",
+            "Estimates suggest a surplus of roughly one part in a billion survived.",
+            "Everything that exists is that rounding error."
+          ]
+        },
+        {
+          "heading": "Hunting the asymmetry",
+          "points": [
+            "Certain particle decays do show a small preference between matter and antimatter.",
+            "The measured effect is far too small to explain the observed surplus.",
+            "So a known mechanism exists, but it is nowhere near sufficient."
+          ]
+        },
+        {
+          "heading": "Genuinely open",
+          "points": [
+            "Proposed solutions involve neutrinos, undiscovered particles or new symmetry violations.",
+            "None is confirmed, and experiments are actively searching.",
+            "This is not a gap in popular understanding - it is a gap in physics."
+          ]
+        }
+      ],
+      "visual_queries": ["particle collision", "large hadron collider", "big bang timeline", "antimatter experiment", "early universe simulation"],
+      "tags": ["antimatter", "baryon asymmetry", "particle physics", "big bang", "cp violation"]
+    },
+    {
+      "id": "t046",
+      "title": "There Are Stars Being Thrown Out of the Galaxy",
+      "angle": "discovery",
+      "hook": "Some stars are moving so fast that the Milky Way cannot hold them. They are leaving, permanently, and something violent launched them.",
+      "promise": "How a star gets ejected from a galaxy, how we trace them back, and what they let us measure.",
+      "beats": [
+        {
+          "heading": "Too fast to stay",
+          "points": [
+            "Escaping the Milky Way requires speeds of many hundreds of kilometres per second.",
+            "A number of stars have been measured above that threshold.",
+            "They are on one-way trips into intergalactic space."
+          ]
+        },
+        {
+          "heading": "The slingshot",
+          "points": [
+            "A binary pair straying near the central black hole can be torn apart.",
+            "One star is captured, the other is flung outward at extreme speed.",
+            "Tracing trajectories backward, several do point toward the galactic centre."
+          ]
+        },
+        {
+          "heading": "The other launcher",
+          "points": [
+            "If one star in a close binary explodes, its partner is released at its orbital speed.",
+            "Some of the fastest known stars are best explained this way.",
+            "Their surface composition can carry chemical evidence of the explosion."
+          ]
+        },
+        {
+          "heading": "Useful probes",
+          "points": [
+            "Their trajectories are shaped by the total mass they travel through.",
+            "That makes them independent tracers of the galaxy's dark matter halo.",
+            "An escaping star is an accidental measuring instrument."
+          ]
+        },
+        {
+          "heading": "Where they end up",
+          "points": [
+            "They will drift alone in intergalactic space for billions of years.",
+            "Any planets carried along would have a sky containing almost no stars.",
+            "The Milky Way has been quietly leaking stars for its entire existence."
+          ]
+        }
+      ],
+      "visual_queries": ["hypervelocity star", "milky way center", "gaia star map", "supernova binary system", "galactic halo"],
+      "tags": ["hypervelocity stars", "galactic center", "sagittarius a star", "gaia", "dark matter halo"]
+    },
+    {
+      "id": "t047",
+      "title": "Io Is the Most Violent Place in the Solar System",
+      "angle": "scale",
+      "hook": "There is a moon with four hundred active volcanoes throwing sulphur three hundred kilometres into space. It is being kneaded like dough.",
+      "promise": "What keeps a small moon this violently active, and how it poisons the space around Jupiter.",
+      "beats": [
+        {
+          "heading": "The most active body we know",
+          "points": [
+            "Io has hundreds of active volcanic centres.",
+            "Some plumes rise hundreds of kilometres above the surface.",
+            "It has essentially no impact craters - eruptions bury them continuously."
+          ]
+        },
+        {
+          "heading": "Squeezed by gravity",
+          "points": [
+            "Io is caught in an orbital resonance with Europa and Ganymede.",
+            "That keeps its orbit slightly elliptical, so Jupiter's pull varies constantly.",
+            "The resulting flexing heats the interior enormously."
+          ]
+        },
+        {
+          "heading": "The surface",
+          "points": [
+            "Sulphur compounds give it a yellow, orange and white appearance.",
+            "Lava temperatures indicate silicate volcanism, not just sulphur.",
+            "Mountains rise higher than Everest with no plate tectonics to build them."
+          ]
+        },
+        {
+          "heading": "Feeding a radiation belt",
+          "points": [
+            "Io loses about a ton of material per second to space.",
+            "That material forms a torus of plasma around Jupiter.",
+            "It drives some of the most intense radiation in the solar system."
+          ]
+        },
+        {
+          "heading": "The contrast next door",
+          "points": [
+            "The same tidal mechanism that melts Io keeps Europa's ocean liquid.",
+            "Slightly different orbits produce hell and a candidate for life.",
+            "Distance from the parent planet decides which one you get."
+          ]
+        }
+      ],
+      "visual_queries": ["io moon volcano", "io surface", "jupiter io juno", "volcanic plume space", "jupiter moons comparison"],
+      "tags": ["io", "jupiter moons", "volcanism", "tidal heating", "orbital resonance"]
+    },
+    {
+      "id": "t048",
+      "title": "Radio Bursts Are Arriving From Billions of Light Years Away",
+      "angle": "mystery",
+      "hook": "Something releases as much energy as the Sun puts out in days, in less than a thousandth of a second, and then usually never repeats.",
+      "promise": "What fast radio bursts are, the breakthrough that identified one source, and why the rest are still open.",
+      "beats": [
+        {
+          "heading": "The discovery",
+          "points": [
+            "The first was found in archived data in 2007 and initially doubted.",
+            "The bursts last milliseconds and are extraordinarily bright.",
+            "Their dispersion indicates they crossed vast amounts of intergalactic material."
+          ]
+        },
+        {
+          "heading": "A false alarm",
+          "points": [
+            "Some early signals turned out to come from a microwave oven at the observatory.",
+            "That episode forced much stricter verification standards.",
+            "Genuine bursts were then confirmed from far outside our galaxy."
+          ]
+        },
+        {
+          "heading": "Some repeat",
+          "points": [
+            "A few sources burst again, which rules out one-off destructive events for them.",
+            "Others have never been seen twice.",
+            "There is likely more than one production mechanism."
+          ]
+        },
+        {
+          "heading": "The breakthrough",
+          "points": [
+            "In 2020 a burst was traced to a magnetar inside our own galaxy.",
+            "That confirmed magnetars can produce these signals.",
+            "It is a solved case for that source, not for the whole population."
+          ]
+        },
+        {
+          "heading": "Turning them into tools",
+          "points": [
+            "The way a burst spreads out reveals the matter it passed through.",
+            "That makes them probes of otherwise invisible intergalactic gas.",
+            "An unexplained signal became a measuring device before being fully explained."
+          ]
+        }
+      ],
+      "visual_queries": ["radio telescope array", "chime telescope", "magnetar", "fast radio burst artist concept", "intergalactic space"],
+      "tags": ["fast radio bursts", "magnetar", "radio astronomy", "chime", "astrophysics"]
+    },
+    {
+      "id": "t049",
+      "title": "The Asteroid That Could Actually Hit Us",
+      "angle": "threat",
+      "hook": "In 2004 an asteroid was briefly given a one in thirty-seven chance of hitting Earth. Then we did something about the problem in general.",
+      "promise": "How impact risk is really assessed, the near-misses that changed policy, and the mission that proved we can deflect one.",
+      "beats": [
+        {
+          "heading": "The 2004 scare",
+          "points": [
+            "Apophis was initially calculated with a small but alarming impact probability.",
+            "Additional observations shrank the uncertainty and eliminated the risk for the foreseeable future.",
+            "It will pass closer than some satellites in 2029, harmlessly."
+          ]
+        },
+        {
+          "heading": "Why early odds look scary",
+          "points": [
+            "A short observation arc leaves a wide range of possible orbits.",
+            "If Earth falls inside that range, the quoted probability is non-trivial.",
+            "More data almost always shrinks the risk rather than raising it."
+          ]
+        },
+        {
+          "heading": "The ones we miss",
+          "points": [
+            "In 2013 an object exploded over Chelyabinsk, injuring over a thousand people, undetected.",
+            "It approached from the direction of the Sun, a genuine blind spot.",
+            "Small objects are the hardest to see and the most likely to arrive."
+          ]
+        },
+        {
+          "heading": "We tested a deflection",
+          "points": [
+            "In 2022 the DART spacecraft deliberately struck the moonlet Dimorphos.",
+            "The impact measurably shortened its orbital period.",
+            "Kinetic deflection went from theory to demonstrated capability."
+          ]
+        },
+        {
+          "heading": "The realistic risk",
+          "points": [
+            "Large, civilisation-threatening objects are mostly catalogued and none is on course.",
+            "The residual risk sits with smaller, harder-to-detect bodies.",
+            "This is the one natural catastrophe we could genuinely prevent with warning."
+          ]
+        }
+      ],
+      "visual_queries": ["asteroid surface", "dart mission impact", "near earth asteroid", "meteor entering atmosphere", "osiris rex bennu"],
+      "tags": ["apophis", "asteroid impact", "dart mission", "planetary defense", "near earth objects"]
+    },
+    {
+      "id": "t050",
+      "title": "The Last Star in the Universe",
+      "angle": "existential",
+      "hook": "One day, the last star will run out of fuel. After that, the universe stays dark for longer than it has existed by a factor no word describes.",
+      "promise": "A timeline of everything that is left to happen, from now until nothing happens again.",
+      "beats": [
+        {
+          "heading": "Where we are",
+          "points": [
+            "The universe is about 13.8 billion years old.",
+            "Star formation already peaked billions of years ago and is declining.",
+            "We are living early, during the brightest chapter."
+          ]
+        },
+        {
+          "heading": "The end of star formation",
+          "points": [
+            "Galaxies gradually exhaust the gas available for making new stars.",
+            "The longest-lived small red dwarfs burn for trillions of years.",
+            "Eventually the last one fades and no new stars are possible."
+          ]
+        },
+        {
+          "heading": "The era of remnants",
+          "points": [
+            "What remains are white dwarfs, neutron stars and black holes.",
+            "They slowly cool and radiate away their heat.",
+            "Rare collisions produce brief flashes in an otherwise dark universe."
+          ]
+        },
+        {
+          "heading": "Black holes evaporate",
+          "points": [
+            "Hawking radiation causes black holes to lose mass extraordinarily slowly.",
+            "The largest take unimaginable spans of time to disappear.",
+            "One by one, the last structures evaporate."
+          ]
+        },
+        {
+          "heading": "What is left",
+          "points": [
+            "A thin, cold, expanding fog of particles and radiation.",
+            "No structure, no gradients, nothing capable of storing or using energy.",
+            "Every event that will ever happen has already happened."
+          ]
+        },
+        {
+          "heading": "Why this is not depressing",
+          "points": [
+            "The interesting era is measured in tens of billions of years, and we are inside it.",
+            "Stars, planets and observers are only possible in this narrow window.",
+            "Being early is the good outcome."
+          ]
+        }
+      ],
+      "visual_queries": ["dying star", "white dwarf", "black hole evaporation", "empty space stars", "red dwarf star"],
+      "tags": ["heat death", "degenerate era", "black hole evaporation", "deep time", "fate of the universe"]
+    }
+  ]
+}

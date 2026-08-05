@@ -1,0 +1,52 @@
+# --- Secrets (NEVER commit these) ------------------------------------------
+.env
+client_secret.json
+youtube_token.json
+*.pem
+
+# --- Generated output ------------------------------------------------------
+# Rendered videos are large and are re-created on every run, so they are never
+# committed. The GitHub runner is wiped after each job anyway.
+output/
+*.mp4
+*.mkv
+*.webm
+*.mp3
+*.wav
+*.m4a
+*.ass
+*.srt
+
+# --- Downloaded NASA / stock assets ----------------------------------------
+# Fetched fresh per run; committing them would blow up the repo size.
+assets/cache/
+assets/footage/*
+!assets/footage/.gitkeep
+!assets/footage/README.md
+assets/music/*
+!assets/music/.gitkeep
+!assets/music/README.md
+
+# --- Thumbnails (regenerated every run) ------------------------------------
+*.jpg
+*.jpeg
+*.png
+!docs/**/*.png
+
+# --- Python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- OS / editor -----------------------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

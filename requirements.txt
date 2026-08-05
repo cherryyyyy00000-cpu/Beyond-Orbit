@@ -1,0 +1,36 @@
+# ===========================================================================
+# Beyond Orbit — faceless space-documentary auto-generator & YouTube poster.
+#
+# Builds 10-15 minute 16:9 space documentaries from real NASA/ESA public-domain
+# imagery + free neural narration, then auto-clips one vertical Short from each.
+# Python 3.9+ required. Everything here is FREE / open-source.
+# ===========================================================================
+
+# --- Free neural text-to-speech (Microsoft Edge voices, NO API key) ---
+edge-tts>=6.1.10
+
+# --- Thumbnail + overlay drawing (video frames are grabbed via system ffmpeg) ---
+Pillow==10.4.0
+
+# --- YouTube upload (OAuth2, resumable) ---
+google-api-python-client==2.137.0
+google-auth==2.32.0
+google-auth-oauthlib==1.2.1
+google-auth-httplib2==0.2.0
+
+# --- Optional: script + title generation (only used if GEMINI_API_KEY is set) ---
+google-generativeai==0.8.3
+
+# --- HTTP (NASA SVS / images-api.nasa.gov / Pexels) + env loading ---
+requests==2.32.3
+python-dotenv==1.0.1
+
+# NOTE: ffmpeg + fonts-dejavu-core are SYSTEM packages, installed by the
+# workflows with:  apt-get install -y ffmpeg fonts-dejavu-core
+#
+# There is NO paid API in this pipeline:
+#   narration ...... edge-tts          (free, no key)
+#   footage ........ NASA SVS + images-api.nasa.gov  (free, no key)
+#   render ......... ffmpeg            (free)
+#   upload ......... YouTube Data API v3 free quota
+#   scheduling ..... GitHub Actions    (free tier)

@@ -1,0 +1,169 @@
+{
+  "channel": {
+    "name": "Beyond Orbit",
+    "handle": "@BeyondOrbit",
+    "tagline": "The universe, explained.",
+    "accent_rgb": [92, 148, 255],
+    "niche": "Faceless space & universe documentaries — black holes, exoplanets, cosmic scale, unexplained signals — narrated over real NASA/ESA public-domain imagery",
+    "audience": "USA viewers who binge space documentaries and 'what if' cosmic scenarios",
+    "language": "English (US)",
+    "cta": "Subscribe — a new deep-space story every week.",
+    "contact": "Beyond Orbit — the universe, explained.",
+    "comment": "LONG-FORM space documentary channel (16:9). This is the watch-hours engine: Shorts feed watch time does NOT count toward the 4,000-hour YPP threshold, but long-form watch time DOES. Each long-form video also spawns one vertical Short (see 'shorts' below) for discovery/subs. To re-brand, change name/handle/tagline/cta here AND the channel name on YouTube."
+  },
+
+  "topics": {
+    "source": "space_bank.json",
+    "order": "sequence",
+    "use_gemini": true,
+    "comment": "Topics come from topics/space_bank.json (50 hand-written viral angles, each with a hook, script beats, chapters and suggested NASA visuals). If GEMINI_API_KEY is set and use_gemini=true, the script is expanded/fresh-written per run using the bank entry as the brief (falls back to the built-in beat templates on any error). order='sequence' walks the bank 1,2,3...; 'random' picks no-repeat random."
+  },
+
+  "script": {
+    "target_minutes": 12,
+    "min_words": 1500,
+    "max_words": 2200,
+    "words_per_minute": 150,
+    "cold_open_seconds": 3,
+    "promise_at_seconds": 12,
+    "open_loop_every_seconds": 55,
+    "segments": 7,
+    "min_publishable_minutes": 6,
+    "allow_short_publish": false,
+    "comment": "7-LAYER HOOK SYSTEM. cold_open_seconds: first line must shock — NO logo, NO 'hey guys', NO intro. promise_at_seconds: state what the viewer gets by the end. open_loop_every_seconds: plant an unresolved question every ~55s so the viewer cannot leave. words_per_minute=150 is the natural edge-tts documentary pace, used to estimate runtime from word count. IMPORTANT — READ THIS: the topic bank stores a BRIEF (a hook plus research beats), not a finished script. With GEMINI_API_KEY set, Gemini turns that brief into a full 1500-2200 word (~12 min) script and everything works as intended. WITHOUT a Gemini key the offline template mode only reaches about 2-3 minutes, because expanding terse beats into 1500 words locally would be pure filler — and filler both destroys retention and is precisely what YouTube's inauthentic-content policy penalises. So min_publishable_minutes=6 acts as a safety gate: generate.py SKIPS a topic (without burning it from the rotation) rather than publishing a 2-minute stub as a documentary. Set allow_short_publish=true only if you deliberately want short videos out."
+  },
+
+  "tts": {
+    "voice": "en-US-AndrewNeural",
+    "voices": [
+      "en-US-AndrewNeural",
+      "en-US-BrianNeural",
+      "en-US-GuyNeural",
+      "en-US-AriaNeural",
+      "en-US-EmmaNeural"
+    ],
+    "rotate_voices": false,
+    "rate": "+4%",
+    "volume": "+0%",
+    "pitch": "-2Hz",
+    "comment": "edge-tts = free Microsoft neural voices, NO API key. For documentaries keep rotate_voices=FALSE — one consistent narrator voice builds channel identity (the opposite of Shorts, where rotation avoids 'templated content' flags). rate='+4%' is a calm documentary pace (Shorts use +14%). pitch='-2Hz' adds a little authority. Andrew/Brian are the most documentary-sounding US male voices."
+  },
+
+  "video": {
+    "resolution": "1440p",
+    "resolutions": {
+      "1080p": [1920, 1080],
+      "1440p": [2560, 1440],
+      "4k": [3840, 2160]
+    },
+    "fps": 30,
+    "crf": 20,
+    "preset": "fast",
+    "max_minutes": 20,
+    "outro_seconds": 6.0,
+    "footage_dir": "assets/footage",
+    "music_dir": "assets/music",
+    "music_volume": 0.07,
+    "shot_seconds_min": 4.0,
+    "shot_seconds_max": 8.0,
+    "ken_burns": true,
+    "ken_burns_zoom": 1.12,
+    "comment": "1440p (2560x1440) is the DEFAULT and the recommended setting — YouTube encodes 1440p and above with the better VP9 codec, so even a viewer watching at 1080p sees a sharper picture than a 1080p upload. Set resolution='4k' for true 4K, but note free GitHub runners have NO GPU: 4K at preset='fast' takes ~45-90 min, and 4K at preset='medium' can exceed the 6-hour job limit. shot_seconds_min/max = PATTERN INTERRUPT: the visual changes every 4-8s so the viewer's brain never settles. ken_burns adds slow zoom/pan to still NASA images so they never look like a static slideshow."
+  },
+
+  "captions": {
+    "enabled": true,
+    "burn_in": false,
+    "words_per_group": 6,
+    "font_size": 46,
+    "primary_color": "#FFFFFF",
+    "highlight_color": "#5C94FF",
+    "outline_color": "#000000",
+    "outline_width": 4,
+    "vertical_position_ratio": 0.86,
+    "highlight_active_word": false,
+    "comment": "For LONG-FORM, burn_in defaults to FALSE — burned-in captions look amateurish on a 12-minute documentary and block the visuals. Instead we upload a real .srt caption track to YouTube (better for SEO and accessibility, and viewers can toggle it). The Short DOES get big burned-in karaoke captions (see shorts.captions_*). Set burn_in=true only if you specifically want them baked into the long-form."
+  },
+
+  "chapters": {
+    "enabled": true,
+    "min_count": 3,
+    "first_must_be_zero": true,
+    "comment": "YouTube chapters require the FIRST timestamp to be 00:00 and at least 3 chapters, each 10s or longer. Chapters increase watch time (viewers re-watch sections) and add SEO keywords to the description."
+  },
+
+  "thumbnail": {
+    "enabled": true,
+    "width": 1280,
+    "height": 720,
+    "variants": 3,
+    "title_fontsize": 128,
+    "title_color": "#FFFFFF",
+    "accent_color": "#FFD34D",
+    "stroke_color": "#000000",
+    "stroke_width": 10,
+    "max_words": 5,
+    "darken_opacity": 0.42,
+    "saturation": 1.18,
+    "contrast": 1.08,
+    "vignette": true,
+    "comment": "1280x720 is the YouTube standard. max_words=5 — on a phone the thumbnail is ~120px wide, so more than 5 words is unreadable. 3 variants are generated per video (different crop/layout/hook wording) so you can pick the best; variant 1 is uploaded automatically. Space thumbnails win on SCALE CONTRAST (tiny Earth next to a huge object) since there is no face to use."
+  },
+
+  "shorts": {
+    "enabled": true,
+    "count": 3,
+    "stagger_days": 1,
+    "width": 1080,
+    "height": 1920,
+    "clip_seconds": 40,
+    "captions_enabled": true,
+    "captions_font_size": 78,
+    "captions_words_per_group": 3,
+    "captions_highlight_active_word": true,
+    "cta_text": "FULL STORY ON THE CHANNEL",
+    "title_suffix": "#shorts #space #universe",
+    "comment": "Each documentary is auto-clipped into 'count' vertical Shorts. The highest-scoring NON-OVERLAPPING ~40s windows are picked from the narration word timings (sentence-aligned, outro excluded), cropped to 1080x1920, and given big burned-in karaoke captions. count=3 matters: at 3 long-form uploads a week, one Short each would only be 3 Shorts a week, which is far too slow to build subscribers — 3 each gives roughly daily Shorts from the same single render. stagger_days=1 spreads them over consecutive days via publishAt so they do not all land at once. Division of labour: the Shorts are the DISCOVERY engine (subs), the long-form is the WATCH-HOURS engine. Shorts feed watch time does NOT count toward the 4,000-hour threshold, which is precisely why the long-form exists."
+  },
+
+  "nasa": {
+    "prefer_video": true,
+    "min_image_width": 2560,
+    "max_assets_per_video": 14,
+    "sources": ["images_api"],
+    "svs_base": "https://svs.gsfc.nasa.gov",
+    "images_api": "https://images-api.nasa.gov/search",
+    "block_keywords": ["logo", "insignia", "meatball", "seal", "emblem", "worm"],
+    "require_public_domain": true,
+    "comment": "NASA content generally is NOT subject to copyright in the US — that is this channel's unfair advantage: broadcast-quality space footage with effectively zero Content ID risk. SOURCES: 'images_api' (images-api.nasa.gov) is the only source enabled by default. It needs no API key, is a documented stable endpoint, and already mirrors a large amount of SVS and JPL material. You may add 'svs' to this list, but be aware modules/nasa_fetch.py deliberately does NOT download from SVS: its JSON endpoint is not published as a versioned public API, so we do not want a silent shape change to break every render. TWO HARD RULES are enforced in nasa_fetch.py: (1) block_keywords rejects the NASA logo/insignia/meatball/worm, which may NOT be used because doing so implies NASA endorses this channel — matching is word-boundary based so 'wormhole' and 'sealed' are not false positives; (2) any asset whose metadata names a third-party rights holder (copyright, Getty, 'all rights reserved', etc.) is skipped, because some NASA pages embed licensed music or contractor footage. ESA/Hubble and ESO material is CC BY 4.0, so attribution is auto-added to the description by modules/metadata.py."
+  },
+
+  "youtube": {
+    "category_id": "28",
+    "privacy_status": "public",
+    "made_for_kids": false,
+    "publish_hour_et": 14,
+    "publish_days": ["Thursday", "Friday", "Saturday"],
+    "upload_lead_hours": 5,
+    "schedule_publish": true,
+    "default_tags": [
+      "space",
+      "universe",
+      "astronomy",
+      "space documentary",
+      "black hole",
+      "nasa",
+      "cosmos",
+      "outer space",
+      "space facts",
+      "science",
+      "astrophysics",
+      "galaxy",
+      "solar system",
+      "exoplanets",
+      "james webb space telescope"
+    ],
+    "title_hashtags": ["#space", "#universe", "#nasa"],
+    "comment": "category_id 28 = Science & Technology. TIMING: publish at 2:00 PM ET on Thu/Fri/Sat — that single slot catches the US after-school/after-work window, the 7-11 PM ET evening peak, AND the next morning. CRITICAL: upload_lead_hours=5 means the file is uploaded 5 hours BEFORE publish time as PRIVATE with status.publishAt set. Without this a 1440p/4K video goes live while YouTube is still processing, so the first hour — the single most important hour for the algorithm — is served at 360p. title_hashtags: only the FIRST 3 hashtags render above the title, so we pick deliberately."
+  }
+}
