@@ -94,15 +94,6 @@ def check_secrets() -> bool:
                 "-> Actions in GitHub")
             have_all = False
 
-    if get_env("GEMINI_API_KEY"):
-        ok("GEMINI_API_KEY is set — full ~12 minute scripts enabled")
-    else:
-        warn("GEMINI_API_KEY is not set",
-             "Without it the offline template mode only reaches about 2-3 "
-             "minutes, which is below script.min_publishable_minutes (6), so "
-             "generate.py will SKIP every topic instead of publishing stubs. "
-             "Free key: https://aistudio.google.com/apikey")
-
     if get_env("PEXELS_API_KEY"):
         ok("PEXELS_API_KEY is set — filler B-roll available")
     else:
@@ -111,10 +102,97 @@ def check_secrets() -> bool:
 
 
 # ---------------------------------------------------------------------------
+# 1b. Gemini — actually CALL it
+# ---------------------------------------------------------------------------
+def check_gemini() -> bool:
+    """Make a real Gemini request.
+
+    Checking only that the variable is set is worse than useless: it reports
+    "scripts enabled" while every run silently falls back to 2-minute templates
+    and skips the topic. The only meaningful test is a live call.
+    """
+    header("2. Gemini (script generation)")
+
+    if not get_env("GEMINI_API_KEY"):
+        warn("GEMINI_API_KEY is not set",
+             "Without it the offline template mode only reaches ~2-3 minutes, "
+             "which is under script.min_publishable_minutes (6), so generate.py "
+             "SKIPS every topic and produces nothing. "
+             "Free key: https://aistudio.google.com/apikey")
+        return False
+
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=get_env("GEMINI_API_KEY"))
+    except ImportError:
+        bad("google-generativeai is not installed", "pip install -r requirements.txt")
+        return False
+    except Exception as exc:  # noqa: BLE001
+        bad(f"Could not configure Gemini: {str(exc)[:180]}")
+        return False
+
+    # Which models does this key actually have?
+    models: List[str] = []
+    try:
+        for m in genai.list_models():
+            name = str(getattr(m, "name", "")).replace("models/", "")
+            if name and "generateContent" in (
+                    getattr(m, "supported_generation_methods", []) or []):
+                models.append(name)
+        if models:
+            flash = [n for n in models if "flash" in n]
+            ok(f"{len(models)} model(s) available to this key")
+            info("flash models: " + (", ".join(sorted(flash, reverse=True)[:4])
+                                     or "none"))
+        else:
+            bad("The key lists NO models that support generateContent",
+                "the Generative Language API may not be enabled for this key's "
+                "project — check https://aistudio.google.com/apikey")
+            return False
+    except Exception as exc:  # noqa: BLE001
+        warn(f"Could not list models ({str(exc)[:140]}) — trying a call anyway.")
+
+    # A real generation call, small enough to be cheap.
+    order = sorted([n for n in models if "flash" in n], reverse=True) or models
+    forced = get_env("GEMINI_MODEL")
+    if forced:
+        order = [forced] + [m for m in order if m != forced]
+
+    for name in (order or ["gemini-2.5-flash"])[:3]:
+        try:
+            model = genai.GenerativeModel(name)
+            resp = model.generate_content(
+                "Reply with exactly: OK",
+                generation_config={"temperature": 0.0, "max_output_tokens": 16},
+            )
+            text = (getattr(resp, "text", "") or "").strip()
+            if text:
+                ok(f"live generation works with '{name}' (replied {text[:20]!r})")
+                info("Full ~12 minute scripts will be generated.")
+                return True
+            warn(f"'{name}' returned an empty response.")
+        except Exception as exc:  # noqa: BLE001
+            msg = str(exc)
+            if any(k in msg.lower() for k in
+                   ("429", "quota", "exceeded", "rate limit", "resource_exhausted")):
+                bad(f"'{name}' is RATE-LIMITED / out of quota")
+                info(f"exact error: {msg[:260]}")
+                info("The free tier limits requests per minute AND per day.")
+                info("If this is a brand-new key, the usual causes are:")
+                info("  * the Generative Language API is not enabled for its project")
+                info("  * the key was made in a project with billing restrictions")
+                info("  * the free tier is unavailable in your region")
+                info("Try creating the key fresh at https://aistudio.google.com/apikey")
+            else:
+                bad(f"'{name}' failed: {msg[:220]}")
+    return False
+
+
+# ---------------------------------------------------------------------------
 # 2 + 3 + 4. Token, scopes, and WHICH channel
 # ---------------------------------------------------------------------------
 def check_youtube() -> Tuple[bool, Optional[str]]:
-    header("2. YouTube credentials")
+    header("3. YouTube credentials")
 
     try:
         from google.auth.transport.requests import Request
@@ -151,7 +229,7 @@ def check_youtube() -> Tuple[bool, Optional[str]]:
         return False, None
 
     # --- Which scopes were ACTUALLY granted? -------------------------------
-    header("3. Granted scopes")
+    header("4. Granted scopes")
     granted: List[str] = []
     try:
         url = ("https://oauth2.googleapis.com/tokeninfo?"
@@ -181,8 +259,20 @@ def check_youtube() -> Tuple[bool, Optional[str]]:
                  "           https://www.googleapis.com/auth/youtube.force-ssl")
 
     # --- WHICH CHANNEL? ----------------------------------------------------
-    header("4. Which channel does this token control?")
+    header("5. Which channel does this token control?")
     channel_title = None
+    if granted and _FORCE_SSL_SCOPE not in granted and \
+            "https://www.googleapis.com/auth/youtube" not in granted and \
+            "https://www.googleapis.com/auth/youtube.readonly" not in granted:
+        warn("Cannot check the channel — the token only has 'youtube.upload'",
+             "youtube.upload is write-only: it can post a video but cannot READ "
+             "channel info, so channels.list returns 403. Uploads will still\n"
+             "         work, but you have NO confirmation of which channel they "
+             "land on — and picking the wrong channel in the account chooser is\n"
+             "         the most common setup mistake. Add youtube.force-ssl to fix "
+             "this (and to enable caption tracks + custom thumbnails).")
+        return True, None
+
     try:
         yt = build("youtube", "v3", credentials=creds, cache_discovery=False)
         resp = yt.channels().list(part="snippet,statistics,status", mine=True).execute()
@@ -223,13 +313,21 @@ def check_youtube() -> Tuple[bool, Optional[str]]:
                  "verify the channel (Studio -> Settings -> Channel -> Feature "
                  "eligibility) or videos over 15 minutes will be rejected")
     except Exception as exc:  # noqa: BLE001
-        bad(f"channels().list failed: {str(exc)[:200]}",
+        msg = str(exc)
+        if "insufficient authentication scopes" in msg.lower() or "403" in msg:
+            warn("Cannot read the channel — insufficient scopes",
+                 "the refresh token lacks youtube.force-ssl, so channel info "
+                 "cannot be read. Uploads still work, but the channel is\n"
+                 "         unverified. Redo the OAuth Playground step with BOTH "
+                 "youtube.upload and youtube.force-ssl.")
+            return True, None
+        bad(f"channels().list failed: {msg[:200]}",
             "if this mentions 'accessNotConfigured', enable the YouTube Data API "
             "v3 for the project in the Cloud Console")
         return False, channel_title
 
     # --- Quota -------------------------------------------------------------
-    header("5. Quota")
+    header("6. Quota")
     info("A video upload costs 1,600 units; the default daily quota is 10,000")
     info("-> about 6 uploads per day for this Cloud project")
     info("Beyond Orbit posts 3 long-form + up to 2 Shorts per day at most,")
@@ -242,7 +340,7 @@ def check_youtube() -> Tuple[bool, Optional[str]]:
 # 6. Render toolchain
 # ---------------------------------------------------------------------------
 def check_render() -> bool:
-    header("6. Render toolchain")
+    header("7. Render toolchain")
     fine = True
 
     for tool in ("ffmpeg", "ffprobe"):
@@ -307,7 +405,7 @@ def check_render() -> bool:
 # 7. Content + config
 # ---------------------------------------------------------------------------
 def check_content() -> bool:
-    header("7. Content and config")
+    header("8. Content and config")
     fine = True
     try:
         from modules.topic_source import load_topics
@@ -352,6 +450,7 @@ def main() -> int:
     print(f"{DIM}Checks the things that actually break automated uploads.{RESET}")
 
     check_secrets()
+    check_gemini()
     check_youtube()
     check_render()
     check_content()

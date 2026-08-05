@@ -228,11 +228,15 @@ jobs:
           lines = ["## Beyond Orbit results\n\n"]
           p = Path("output/manifest.json")
           if not p.exists():
-              lines.append("No manifest was produced — the build step failed. "
-                           "The most common cause is a missing `GEMINI_API_KEY`: "
-                           "without it scripts are only ~2-3 minutes, which is "
-                           "under the publishable floor, so every topic is "
-                           "skipped. Check the build log above.\n")
+              lines.append("No manifest was produced — the build step failed.\n\n")
+              lines.append("Read the **Build the documentary** log above for the "
+                           "real reason. The usual cause is that the script came "
+                           "out under `script.min_publishable_minutes`, which "
+                           "happens when Gemini did not answer — either the key "
+                           "is missing, or it IS set but was rate-limited / out "
+                           "of quota. Those are different problems: check the "
+                           "**Gemini** section of the verify step, which makes a "
+                           "real API call and prints the exact error.\n")
           else:
               vids = json.loads(p.read_text()).get("videos", [])
               if not vids:

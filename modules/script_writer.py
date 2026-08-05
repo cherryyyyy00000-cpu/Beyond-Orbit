@@ -36,6 +36,7 @@ from __future__ import annotations
 import json
 import random
 import re
+import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -300,6 +301,39 @@ Return ONLY valid JSON in exactly this shape:
 }}"""
 
 
+def _model_candidates(genai) -> List[str]:
+    """Model names to try, best first.
+
+    Model names get retired, and hardcoding one means the pipeline silently
+    degrades to 2-minute template scripts the day it disappears. So we ASK the
+    API which models exist and prefer the fast ones, falling back to a static
+    list only if discovery fails.
+    """
+    forced = get_env("GEMINI_MODEL")
+    out: List[str] = [forced] if forced else []
+
+    try:
+        available = []
+        for m in genai.list_models():
+            name = str(getattr(m, "name", "")).replace("models/", "")
+            methods = getattr(m, "supported_generation_methods", []) or []
+            if name and "generateContent" in methods:
+                available.append(name)
+        # Prefer flash (fast + generous free tier), then anything else.
+        flash = sorted([n for n in available if "flash" in n], reverse=True)
+        rest = sorted([n for n in available if "flash" not in n], reverse=True)
+        out += flash + rest
+        if available:
+            log.info("Gemini models available: %d (trying %s first)",
+                     len(available), (out[0] if out else "none"))
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Could not list Gemini models (%s) — using a static list.", exc)
+
+    out += ["gemini-2.5-flash", "gemini-flash-latest", "gemini-2.0-flash",
+            "gemini-2.5-pro"]
+    return list(dict.fromkeys([m for m in out if m]))
+
+
 def _gemini_script(topic: Topic) -> Optional[Script]:
     """Ask Gemini for a full script. Returns None on any problem."""
     api_key = get_env("GEMINI_API_KEY")
@@ -314,36 +348,67 @@ def _gemini_script(topic: Topic) -> Optional[Script]:
         log.warning("google-generativeai unavailable (%s) — using templates.", exc)
         return None
 
-    env_model = get_env("GEMINI_MODEL", "gemini-2.0-flash")
-    candidates = [m for m in (env_model, "gemini-2.0-flash", "gemini-flash-latest") if m]
     prompt = _gemini_prompt(topic)
+    candidates = _model_candidates(genai)
+    quota_hits = 0
 
-    for model_name in dict.fromkeys(candidates):
-        try:
-            model = genai.GenerativeModel(model_name)
-            resp = model.generate_content(
-                prompt,
-                generation_config={
-                    "temperature": 0.85,
-                    "response_mime_type": "application/json",
-                    "max_output_tokens": 8192,
-                },
-            )
-            raw = (getattr(resp, "text", "") or "").strip()
-            if not raw:
-                continue
-            parsed = _parse_gemini_json(raw)
-            if parsed:
-                log.info("Script written by Gemini (%s): %d words.",
-                         model_name, parsed.word_count)
-                return parsed
-            log.warning("Gemini (%s) returned unusable JSON.", model_name)
-        except Exception as exc:  # noqa: BLE001
-            msg = str(exc).lower()
-            if any(k in msg for k in ("429", "quota", "exceeded", "rate limit")):
-                log.info("Gemini quota exhausted — falling back to templates.")
-                return None
-            log.warning("Gemini model %s failed (%s).", model_name, exc)
+    for model_name in candidates:
+        # The free tier limits requests PER MINUTE as well as per day, so a 429
+        # is often just "too fast" rather than "out of budget". One backoff retry
+        # per model turns a large share of those into successes.
+        for attempt in (1, 2):
+            try:
+                model = genai.GenerativeModel(model_name)
+                resp = model.generate_content(
+                    prompt,
+                    generation_config={
+                        "temperature": 0.85,
+                        "response_mime_type": "application/json",
+                        "max_output_tokens": 8192,
+                    },
+                )
+                raw = (getattr(resp, "text", "") or "").strip()
+                if not raw:
+                    log.warning("Gemini (%s) returned an empty response.", model_name)
+                    break
+                parsed = _parse_gemini_json(raw)
+                if parsed:
+                    log.info("Script written by Gemini (%s): %d words.",
+                             model_name, parsed.word_count)
+                    return parsed
+                log.warning("Gemini (%s) returned unusable JSON (%d chars).",
+                            model_name, len(raw))
+                break
+            except Exception as exc:  # noqa: BLE001
+                msg = str(exc)
+                lowered = msg.lower()
+                rate_limited = any(k in lowered for k in
+                                   ("429", "quota", "exceeded", "rate limit",
+                                    "resource_exhausted"))
+                if rate_limited:
+                    quota_hits += 1
+                    if attempt == 1:
+                        log.info("Gemini %s rate-limited; retrying in 20s...",
+                                 model_name)
+                        time.sleep(20)
+                        continue
+                    # Log the REAL message. A previous version swallowed it and
+                    # just said "quota exhausted", which made a model-specific
+                    # problem look like an account-wide one.
+                    log.warning("Gemini %s rate-limited after retry: %s",
+                                model_name, msg[:300])
+                else:
+                    log.warning("Gemini %s failed: %s", model_name, msg[:300])
+                break
+
+    if quota_hits:
+        log.error(
+            "Every Gemini model was rate-limited (%d attempts). Check the key's "
+            "quota at https://aistudio.google.com/apikey and that the Generative "
+            "Language API is enabled for its project. Run `python verify_setup.py` "
+            "— it now makes a real Gemini call and prints the exact error.",
+            quota_hits,
+        )
     return None
 
 
