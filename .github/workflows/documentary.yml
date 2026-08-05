@@ -44,9 +44,9 @@ on:
         type: choice
         options: ["1080p", "1440p", "4k"]
       upload:
-        description: "Upload to YouTube? (false = build a preview artifact only)"
+        description: "Upload to YouTube (set false only to build a preview artifact)"
         required: false
-        default: "false"
+        default: "true"
         type: choice
         options: ["true", "false"]
       publish_now:
@@ -185,11 +185,12 @@ jobs:
             python generate.py
           fi
 
-      # On a manual run you can download and review the video here (the run page
-      # -> Artifacts) without it ever being posted. Retention is 1 day so it does
-      # not eat the free Actions storage allowance.
-      - name: Upload preview artifact (manual runs only)
-        if: ${{ steps.gate.outputs.proceed == 'true' && github.event_name == 'workflow_dispatch' }}
+      # Only when you explicitly ask for a preview instead of an upload. Normal
+      # runs go straight to YouTube; the scheduled publish gives you a review
+      # window in Studio anyway, so an artifact is rarely worth the wait.
+      # Retention is 1 day so it does not eat the free Actions storage.
+      - name: Upload preview artifact (only when upload=false)
+        if: ${{ steps.gate.outputs.proceed == 'true' && github.event_name == 'workflow_dispatch' && github.event.inputs.upload == 'false' }}
         uses: actions/upload-artifact@v4
         with:
           name: documentary-preview
@@ -201,8 +202,10 @@ jobs:
           retention-days: 1
           if-no-files-found: warn
 
+      # Uploads on every scheduled run, and on manual runs unless you explicitly
+      # set upload=false.
       - name: Upload to YouTube
-        if: ${{ steps.gate.outputs.proceed == 'true' && (github.event_name == 'schedule' || github.event.inputs.upload == 'true') }}
+        if: ${{ steps.gate.outputs.proceed == 'true' && (github.event_name == 'schedule' || github.event.inputs.upload != 'false') }}
         env:
           YT_CLIENT_ID:     ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
