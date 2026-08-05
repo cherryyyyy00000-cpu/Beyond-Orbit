@@ -326,25 +326,37 @@ def _credit_for(center: object, secondary: object, title: object) -> str:
 # ---------------------------------------------------------------------------
 # Source 1 — images-api.nasa.gov (primary, no key required)
 # ---------------------------------------------------------------------------
-def _pick_asset_file(hrefs: Sequence[str], want_video: bool) -> Optional[str]:
-    """Choose the best file variant from an /asset/{id} listing.
+def _pick_asset_files(hrefs: Sequence[str], want_video: bool) -> List[str]:
+    """Rank the file variants of one asset, best-and-most-likely-to-work first.
 
-    NASA asset listings expose the same item at several sizes, suffixed
-    ``~orig``, ``~large``, ``~medium``, ``~small``, ``~thumb``. For stills we
-    want the biggest. For video the true original can be several hundred
-    megabytes, so we prefer ``~large`` and only fall back to ``~orig``.
+    NASA listings expose the same item at several sizes, suffixed ``~orig``,
+    ``~large``, ``~medium``, ``~small``, ``~thumb``.
+
+    Returns a LIST, not one URL, because a single choice was losing footage: if
+    the preferred video variant exceeded the size cap, the whole asset was
+    dropped and the pipeline fell back to a still photograph. Real moving footage
+    is the entire point, so it is worth trying a smaller variant before giving up.
+
+    For video, medium comes first — it downloads reliably and a 1080-ish source
+    upscales acceptably into a 1440p timeline, which beats not having motion at
+    all. For stills, biggest first, since sharpness is what matters there.
     """
     exts = (".mp4", ".mov", ".m4v") if want_video else (".jpg", ".jpeg", ".png", ".tif", ".tiff")
     cands = [h for h in hrefs if h.lower().split("?")[0].endswith(exts)]
     if not cands:
-        return None
+        return []
 
-    order = ["~large", "~orig", "~medium"] if want_video else ["~orig", "~large", "~medium"]
+    order = (["~medium", "~large", "~orig", "~small"] if want_video
+             else ["~orig", "~large", "~medium"])
+    ranked: List[str] = []
     for token in order:
         for h in cands:
-            if token in h.lower():
-                return h
-    return cands[0]
+            if token in h.lower() and h not in ranked:
+                ranked.append(h)
+    for h in cands:                      # anything unlabelled, last
+        if h not in ranked:
+            ranked.append(h)
+    return ranked
 
 
 def _search_images_api(query: str, want_video: bool, limit: int) -> List[dict]:
@@ -418,38 +430,51 @@ def _download_images_api_item(item: dict, dest_dir: Path, query: str) -> Optiona
         return None
 
     want_video = bool(item.get("want_video"))
-    url = _pick_asset_file(hrefs, want_video)
-    if not url:
+    candidates = _pick_asset_files(hrefs, want_video)
+    if not candidates:
         return None
-    if url.startswith("http://"):
-        url = "https://" + url[len("http://"):]
 
-    suffix = Path(urllib.parse.urlparse(url).path).suffix or (".mp4" if want_video else ".jpg")
-    safe_id = re.sub(r"[^A-Za-z0-9._-]", "_", nasa_id)[:60]
-    dest = dest_dir / f"nasa_{safe_id}{suffix}"
     cap = _MAX_VIDEO_BYTES if want_video else _MAX_IMAGE_BYTES
-    if not _download(url, dest, cap):
-        return None
+    safe_id = re.sub(r"[^A-Za-z0-9._-]", "_", nasa_id)[:60]
 
-    width, height = _probe_dimensions(dest, want_video)
-    if not want_video:
-        min_w = int(cfg("nasa.min_image_width", 2560))
-        if width and width < min_w:
-            log.debug("Skip %s — %dpx wide, below %dpx minimum.", nasa_id, width, min_w)
-            dest.unlink(missing_ok=True)
-            return None
+    # Walk the variants instead of betting on one. Dropping the asset because the
+    # first video file was too large is how a documentary ends up made entirely of
+    # slowly-zooming photographs.
+    for attempt, url in enumerate(candidates[:4], start=1):
+        if url.startswith("http://"):
+            url = "https://" + url[len("http://"):]
+        suffix = (Path(urllib.parse.urlparse(url).path).suffix
+                  or (".mp4" if want_video else ".jpg"))
+        dest = dest_dir / f"nasa_{safe_id}{suffix}"
 
-    return Asset(
-        path=dest,
-        kind="video" if want_video else "image",
-        title=item.get("title", ""),
-        asset_id=nasa_id,
-        source="images_api",
-        credit=_credit_for(item.get("center"), item.get("secondary"), item.get("title")),
-        width=width,
-        height=height,
-        query=query,
-    )
+        if not _download(url, dest, cap):
+            if attempt < len(candidates[:4]):
+                log.debug("Variant %d of %s unusable — trying a smaller one.",
+                          attempt, nasa_id)
+            continue
+
+        width, height = _probe_dimensions(dest, want_video)
+        if not want_video:
+            min_w = int(cfg("nasa.min_image_width", 2560))
+            if width and width < min_w:
+                log.debug("Skip %s — %dpx wide, below %dpx minimum.",
+                          nasa_id, width, min_w)
+                dest.unlink(missing_ok=True)
+                continue
+
+        return Asset(
+            path=dest,
+            kind="video" if want_video else "image",
+            title=item.get("title", ""),
+            asset_id=nasa_id,
+            source="images_api",
+            credit=_credit_for(item.get("center"), item.get("secondary"),
+                               item.get("title")),
+            width=width,
+            height=height,
+            query=query,
+        )
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -685,12 +710,14 @@ def _fetch_assets_inner(queries: Sequence[str], want: Optional[int],
 
     # --- images-api.nasa.gov: the workhorse.
     if "images_api" in sources or not sources:
-        # Interleave video and stills: motion holds attention, stills are sharper.
+        # ALL video queries first, then stills. Interleaving them per query filled
+        # the budget with photographs before most video searches had even run,
+        # which is how a "documentary" ends up being entirely slow zooms on stills.
+        # Motion is what makes it read as real footage.
         plan: List[tuple] = []
-        for q in queries:
-            if prefer_video:
-                plan.append((q, True))
-            plan.append((q, False))
+        if prefer_video:
+            plan += [(q, True) for q in queries]
+        plan += [(q, False) for q in queries]
 
         for query, want_video in plan:
             if len(assets) >= topic_budget:
@@ -793,10 +820,32 @@ def _fetch_assets_inner(queries: Sequence[str], want: Optional[int],
     if not assets:
         log.warning("No footage could be fetched — the renderer will fall back "
                     "to a generated starfield.")
-    else:
-        vids = sum(1 for a in assets if a.is_video)
-        log.info("Fetched %d asset(s): %d video, %d still.",
-                 len(assets), vids, len(assets) - vids)
+        return assets
+
+    # Spell out EXACTLY what was used. Without this there is no way to tell real
+    # moving footage from still photographs with a slow zoom on them, and those
+    # two look completely different on screen.
+    vids = [a for a in assets if a.is_video]
+    stills = [a for a in assets if not a.is_video]
+    log.info("=" * 62)
+    log.info("FOOTAGE USED: %d asset(s) — %d VIDEO, %d STILL",
+             len(assets), len(vids), len(stills))
+    for a in assets:
+        log.info("  %-5s %-14s %-28s %s",
+                 "VIDEO" if a.is_video else "still",
+                 a.source, (a.asset_id or "")[:28], (a.title or "")[:60])
+    log.info("=" * 62)
+
+    min_video = int(cfg("nasa.min_video_assets", 0) or 0)
+    if min_video and len(vids) < min_video:
+        log.warning(
+            "Only %d real VIDEO asset(s) (wanted at least %d). The rest are "
+            "still photographs with a Ken Burns zoom — real NASA imagery, but "
+            "not moving footage, which looks noticeably different. NASA's library "
+            "holds far more stills than video, so niche topics often come up "
+            "short. The ISS/orbital queries in nasa.always_include_queries are "
+            "the most reliable source of genuine motion.",
+            len(vids), min_video)
     return assets
 
 
