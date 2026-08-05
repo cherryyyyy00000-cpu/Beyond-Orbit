@@ -59,6 +59,69 @@ _DAY_INDEX = {
 # ---------------------------------------------------------------------------
 # Scheduling
 # ---------------------------------------------------------------------------
+def next_short_publish_times(count: int,
+                             now: Optional[dt.datetime] = None,
+                             first_immediate: bool = True) -> List[Optional[str]]:
+    """Publish slots for the Shorts cut from one documentary.
+
+    Shorts are all UPLOADED in the same run (that is where the API quota goes),
+    but they should not all go live at once. This spreads them across the
+    upcoming peak windows in ``shorts.publish_hours_et`` — US Shorts traffic
+    peaks around lunchtime and again in the evening.
+
+    An earlier version used ``now + i days + 1 hour``, which meant a 9 AM ET run
+    published its Shorts at 10 AM ET — nowhere near a peak. This walks real
+    clock slots instead.
+
+    Args:
+        count: how many slots are needed.
+        now: override the clock (for testing).
+        first_immediate: when True the first Short publishes right away. The
+            daily Shorts run sets this False so all three land on real peak
+            windows instead of one going out at whatever time the runner woke up.
+
+    Returns a list of RFC3339 UTC strings; ``None`` means "publish immediately".
+    """
+    count = max(0, int(count))
+    if count == 0:
+        return []
+
+    hours = cfg("shorts.publish_hours_et", [12, 19]) or [12, 19]
+    try:
+        from zoneinfo import ZoneInfo
+        eastern = ZoneInfo("America/New_York")
+    except Exception:  # noqa: BLE001
+        return [None] * count
+
+    now_et = (now or dt.datetime.now(dt.timezone.utc)).astimezone(eastern)
+    # A 40-second vertical clip processes fast, so a short lead is enough.
+    earliest = now_et + dt.timedelta(minutes=45)
+
+    slots: List[Optional[str]] = [None] if first_immediate else []
+    need = count - len(slots)
+    for day_offset in range(0, 21):
+        if need <= 0:
+            break
+        day = now_et.date() + dt.timedelta(days=day_offset)
+        for hour in sorted(float(h) for h in hours):
+            if need <= 0:
+                break
+            h, m = int(hour), int(round((hour - int(hour)) * 60))
+            slot = dt.datetime.combine(day, dt.time(hour=h, minute=m), tzinfo=eastern)
+            if slot < earliest:
+                continue
+            slots.append(slot.astimezone(dt.timezone.utc)
+                         .strftime("%Y-%m-%dT%H:%M:%SZ"))
+            need -= 1
+
+    while len(slots) < count:      # ran out of slots — publish those now
+        slots.append(None)
+
+    log.info("Short publish slots: %s",
+             ", ".join("now" if s is None else s for s in slots[:count]))
+    return slots[:count]
+
+
 def next_publish_time(now: Optional[dt.datetime] = None) -> Optional[str]:
     """Next publish slot as an RFC3339 UTC timestamp, or None if disabled.
 
@@ -308,7 +371,10 @@ def upload_video(
     if thumbnail_path:
         set_thumbnail(video_id, thumbnail_path, service=service)
     if caption_path:
-        upload_caption(video_id, caption_path, service=service)
+        # Derive the BCP-47 code from channel.language, e.g. "English (US)" -> "en".
+        lang = str(cfg("channel.language", "English (US)")).strip().lower()
+        code = "en" if lang.startswith("english") else (lang[:2] or "en")
+        upload_caption(video_id, caption_path, language=code, service=service)
     return video_id
 
 

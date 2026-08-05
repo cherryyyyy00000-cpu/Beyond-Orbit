@@ -19,17 +19,18 @@ name: Beyond Orbit — Documentary
 
 on:
   schedule:
-    # ~9:00 AM ET on Thursday, Friday and Saturday
-    - cron: "13 13 * * 4,5,6"   # EDT (UTC-4)
-    - cron: "13 14 * * 4,5,6"   # EST (UTC-5)
+    # ~9:00 AM ET on Thursday, Friday, Saturday and Sunday (4 per week).
+    # cron day-of-week: 0=Sun, 4=Thu, 5=Fri, 6=Sat.
+    - cron: "13 13 * * 0,4,5,6"   # EDT (UTC-4)
+    - cron: "13 14 * * 0,4,5,6"   # EST (UTC-5)
     # ---- CATCH-UP SWEEPS ------------------------------------------------
     # GitHub frequently drops scheduled runs entirely. These later sweeps can
     # still claim the day's slot; per-day dedupe in schedule_state.json means a
     # recovered run can never double-post.
-    - cron: "41 14 * * 4,5,6"   # ~10:41 AM EDT
-    - cron: "41 15 * * 4,5,6"   # ~10:41 AM EST
-    - cron: "7 16 * * 4,5,6"    # ~12:07 PM EDT
-    - cron: "7 17 * * 4,5,6"    # ~12:07 PM EST
+    - cron: "41 14 * * 0,4,5,6"   # ~10:41 AM EDT
+    - cron: "41 15 * * 0,4,5,6"   # ~10:41 AM EST
+    - cron: "7 16 * * 0,4,5,6"    # ~12:07 PM EDT
+    - cron: "7 17 * * 0,4,5,6"    # ~12:07 PM EST
 
   workflow_dispatch:
     inputs:
@@ -119,7 +120,8 @@ jobs:
           # runs late, next_publish_time() simply picks the next 2 PM slot.
           SLOT_MINUTES = 9 * 60
           LEAD, CATCHUP = 5, 180
-          PUBLISH_WEEKDAYS = {3, 4, 5}   # Thu, Fri, Sat
+          # Python weekday(): Mon=0 ... Sun=6. Thu, Fri, Sat, Sun.
+          PUBLISH_WEEKDAYS = {3, 4, 5, 6}
 
           if now.weekday() not in PUBLISH_WEEKDAYS:
               emit(False, "", f"{now:%a %H:%M %Z} is not a publish day")
@@ -275,6 +277,9 @@ jobs:
             git config user.email "actions@users.noreply.github.com"
             git add rotation_state.json schedule_state.json 2>/dev/null || true
             git commit -m "chore: state update [skip ci]"
+            # Rebase onto anything the daily Shorts workflow committed meanwhile,
+            # so the two schedules cannot clobber each other's state.
+            git pull --rebase --autostash origin ${{ github.ref_name }} || true
             git push origin HEAD:${{ github.ref_name }}
           else
             echo "No state changes to commit."

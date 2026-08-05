@@ -49,10 +49,22 @@ from modules.config import cfg, get_env, setup_logging
 
 log = setup_logging(__name__)
 
-_IMAGES_SEARCH = "https://images-api.nasa.gov/search"
-_IMAGES_ASSET = "https://images-api.nasa.gov/asset/"
-_SVS_SEARCH = "https://svs.gsfc.nasa.gov/api/search/"
 _PEXELS_VIDEO = "https://api.pexels.com/videos/search"
+
+
+def _images_search_url() -> str:
+    return str(cfg("nasa.images_api", "https://images-api.nasa.gov/search"))
+
+
+def _images_asset_url() -> str:
+    """The /asset/{nasa_id} endpoint sits alongside /search on the same host."""
+    base = _images_search_url()
+    return base.rsplit("/search", 1)[0].rstrip("/") + "/asset/"
+
+
+def _svs_search_url() -> str:
+    base = str(cfg("nasa.svs_base", "https://svs.gsfc.nasa.gov")).rstrip("/")
+    return f"{base}/api/search/"
 
 _UA = "BeyondOrbit/1.0 (+educational space documentary channel)"
 
@@ -270,7 +282,7 @@ def _pick_asset_file(hrefs: Sequence[str], want_video: bool) -> Optional[str]:
 def _search_images_api(query: str, want_video: bool, limit: int) -> List[dict]:
     """Search the NASA library. Returns raw item dicts (already rights-filtered)."""
     data = _get_json(
-        _IMAGES_SEARCH,
+        _images_search_url(),
         {
             "q": query,
             "media_type": "video" if want_video else "image",
@@ -323,7 +335,7 @@ def _search_images_api(query: str, want_video: bool, limit: int) -> List[dict]:
 def _download_images_api_item(item: dict, dest_dir: Path, query: str) -> Optional[Asset]:
     """Resolve an item's real file URL and download it."""
     nasa_id = item["nasa_id"]
-    listing = _get_json(_IMAGES_ASSET + urllib.parse.quote(nasa_id))
+    listing = _get_json(_images_asset_url() + urllib.parse.quote(nasa_id))
     if not isinstance(listing, dict):
         return None
     entries = (listing.get("collection") or {}).get("items") or []
@@ -377,7 +389,7 @@ def _search_svs(query: str, limit: int) -> List[Asset]:
     Everything here is therefore wrapped in wide try/except and any surprise
     simply yields an empty list — images-api.nasa.gov remains the reliable path.
     """
-    data = _get_json(_SVS_SEARCH, {"q": query, "limit": limit})
+    data = _get_json(_svs_search_url(), {"q": query, "limit": limit})
     if not isinstance(data, (dict, list)):
         return []
     try:

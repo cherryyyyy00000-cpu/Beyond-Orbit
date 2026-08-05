@@ -18,10 +18,10 @@ watch time does.
 
 That single fact splits the work in two:
 
-| | Job | Counts toward |
-|---|---|---|
-| **Documentary** (12 min, 16:9) | the watch-hours engine | the 4,000-hour path |
-| **Shorts** (3 x 40s, 9:16) | the discovery engine — brings subscribers | the 10M-Shorts path |
+| | Cadence | Job | Counts toward |
+|---|---|---|---|
+| **Documentary** (12 min, 16:9) | 4/week | the watch-hours engine | the 4,000-hour path |
+| **Shorts** (16-28s, 9:16) | 3/day | the discovery engine — brings subscribers | the 10M-Shorts path |
 
 The maths is stark. The Shorts route needs 10 million views in a **rolling** 90
 days — about 111,000 views a day, sustained, because older views keep dropping
@@ -132,27 +132,73 @@ token controls and compares it with `config.json`.
 ## Running it
 
 ```bash
-python generate.py                 # build one documentary + its Shorts
+# Documentaries
+python generate.py                 # build one documentary
 python generate.py --topic t007    # a specific topic
 python generate.py --dry-run       # script only, no render
 python upload_youtube.py           # upload what is pending
-python upload_youtube.py --now     # publish immediately instead of scheduling
-python finalize_rotation.py        # mark topics used (only ones that uploaded)
+
+# Shorts
+python generate_shorts.py          # build 3 Shorts
+python generate_shorts.py --item t007#b2
+python upload_shorts.py            # upload at the peak slots
+
+python finalize_rotation.py        # retire only what actually uploaded
 ```
 
 System packages: `sudo apt-get install -y ffmpeg fonts-dejavu-core`.
 
-### Automation
+### The schedule
 
-`.github/workflows/documentary.yml` runs at ~9 AM ET on **Thursday, Friday and
-Saturday** and uploads straight to YouTube. The manual **Run workflow** button
-does the same; pass `upload: false` only if you specifically want a downloadable
-artifact instead of a real upload.
+| Workflow | Runs | Produces | Publishes |
+|---|---|---|---|
+| `documentary.yml` | ~9 AM ET, **Thu/Fri/Sat/Sun** | 1 documentary | **2 PM ET** |
+| `shorts.yml` | ~10:30 AM ET, **daily** | 3 Shorts | **noon, 4 PM, 7 PM ET** |
 
-Uploading directly is safe because of how the publish is scheduled: the video
-goes up **private** and only becomes public at 2 PM ET. That gives you a
-five-hour window to open it in YouTube Studio and delete or fix it before anyone
-sees it — a review step without having to wait on an artifact.
+Both upload straight to YouTube. The manual **Run workflow** button does the
+same; pass `upload: false` only if you want a downloadable artifact instead.
+
+Uploading directly is safe because of how publishing is scheduled: a video goes
+up **private** and only becomes public at its slot. That gives you a window to
+open it in Studio and delete or fix it before anyone sees it — a review step
+without waiting on an artifact.
+
+### Why Shorts have their own workflow
+
+This is a quota decision, not a stylistic one. The API allows **10,000 units a
+day** and a video upload costs **1,600**. When Shorts were cut out of the
+documentary they all had to be uploaded on the documentary's own day, which
+capped the channel at four of them:
+
+```
+documentary + 4 shorts = 2,050 + 6,400 = 8,450   ok
+documentary + 5 shorts = 2,050 + 8,000 = 10,050  the 5th upload FAILS
+```
+
+That is only ~1.7 Shorts a day. Splitting them across two workflows works out:
+
+```
+documentary day  =  2,050 + 3 x 1,600  =  6,850 units
+Shorts-only day  =          3 x 1,600  =  4,800 units
+```
+
+Worth stating plainly because it is counter-intuitive: **staggered publishing does
+not spread the quota.** Every Short is *uploaded* in one run; only its publish
+time is deferred.
+
+### Where the Shorts content comes from
+
+Nothing new is authored. Each of the 50 topics carries 4-7 beats, and a beat is a
+self-contained idea — so the bank already yields **249 Shorts**, about twelve
+weeks at three a day, growing by 4-7 with every topic added.
+
+A beat plus its framing runs **16-28 seconds**, not 40. That is the right length:
+Shorts are ranked on completion rate, and a 20-second clip is finished far more
+often than a 40-second one. (An earlier 45-word minimum chased a 40-second target
+and cut the usable pool from 249 items to 8.)
+
+Each Short is one chapter of a documentary that exists on the channel, so "full
+story on the channel" is a real promise rather than a bait line.
 
 ---
 
@@ -215,18 +261,23 @@ Change `video.resolution` in `config.json`, or set `BO_RESOLUTION` for one run.
 config.json              every tunable, with the reasoning in "comment" fields
 topics/space_bank.json   50 topic briefs (hook, promise, beats, visuals, tags)
 verify_setup.py          pre-flight check — run this first
-generate.py              build a documentary + Shorts
-upload_youtube.py        upload and schedule
-finalize_rotation.py     mark topics used, only after a confirmed upload
+
+generate.py              build a documentary
+upload_youtube.py        upload + schedule the documentary
+generate_shorts.py       build the daily Shorts
+upload_shorts.py         upload + schedule Shorts at peak times
+finalize_rotation.py     retire content, only after a confirmed upload
+
 modules/
   config.py              config, env, logging, resolution
-  topic_source.py        topic rotation
+  topic_source.py        documentary topic rotation
+  shorts_source.py       derives ~249 Short items from the topic beats
   script_writer.py       7-layer hook structure, chapters
   tts.py                 edge-tts narration, chunked + retried
-  captions.py            .srt track + karaoke .ass
+  captions.py            .srt track + burned-in karaoke .ass
   nasa_fetch.py          public-domain footage, with licence filters
-  video_builder.py       the 16:9 renderer
-  shorts_clipper.py      picks the best non-overlapping windows
+  video_builder.py       the renderer — 16:9 and 9:16 share it
+  shorts_clipper.py      cuts a Short out of a documentary (optional path)
   thumbnail.py           1280x720, three variants
   metadata.py            titles, description, chapters, attribution
   youtube.py             resumable upload, publishAt, captions, thumbnails
@@ -258,10 +309,11 @@ with an explicit statement that the channel is not affiliated with NASA or ESA.
 
 - **Gemini is effectively required.** Without a key, scripts are 2-3 minutes and
   the publishable gate skips every topic. This is deliberate, not a bug.
-- **The topic bank is finite.** 50 topics at 3 uploads a week is about four
-  months. `finalize_rotation.py` warns when 8 or fewer remain, and refuses to
-  loop — republishing the same 50 topics is what the inauthentic-content policy
-  penalises.
+- **The content banks are finite.** 50 topics at 4 documentaries a week is about
+  **12 weeks**; 249 Short items at 3 a day is also about **12 weeks**.
+  `finalize_rotation.py` reports the remaining runway after every run, warns as it
+  gets close, and refuses to loop — republishing the same material is what the
+  inauthentic-content policy penalises. Adding topics extends both banks at once.
 - **NASA search quality varies.** Some topics return fewer good assets than
   others. The fetcher tops up from Pexels when a key is present, and falls back to
   a generated starfield so a render never fails.

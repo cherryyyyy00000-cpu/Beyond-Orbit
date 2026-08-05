@@ -1,0 +1,254 @@
+name: Beyond Orbit — Daily Shorts
+
+# WHY SHORTS HAVE THEIR OWN WORKFLOW
+#
+# This is a quota decision, not a stylistic one. The YouTube API allows 10,000
+# units a day and a video upload costs 1,600. When Shorts were cut out of the
+# documentary they all had to be uploaded on the documentary's own day, which
+# capped the channel at four (2,050 + 6,400 = 8,450; a fifth would hit 10,050 and
+# fail) — only about 1.7 Shorts a day.
+#
+# Split across two workflows the arithmetic works out:
+#     documentary day  =  2,050 + 3 x 1,600  =  6,850 units
+#     Shorts-only day  =          3 x 1,600  =  4,800 units
+# Both are comfortably under 10,000, and the channel gets a real 3 Shorts a day.
+#
+# TIMING. The job runs at ~10:30 AM ET so the first peak slot (noon ET) is still
+# ahead of it. Shorts are uploaded now and given publishAt values of noon, 4 PM
+# and 7 PM Eastern, spreading them across the US afternoon and evening.
+#
+# GitHub cron is UTC-only and ignores US daylight saving, so each slot needs an
+# EDT and an EST line, and the gate below checks the real America/New_York clock.
+# Minutes are deliberately odd and never :00/:15/:30 — GitHub heavily delays or
+# silently drops runs queued on the hour.
+
+on:
+  schedule:
+    - cron: "23 14 * * *"   # ~10:23 AM EDT (UTC-4)
+    - cron: "23 15 * * *"   # ~10:23 AM EST (UTC-5)
+    # Catch-up sweeps for dropped runs. Per-day dedupe prevents a double post.
+    - cron: "51 15 * * *"   # ~11:51 AM EDT
+    - cron: "51 16 * * *"   # ~11:51 AM EST
+
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "How many Shorts to build (default 3)"
+        required: false
+        default: "3"
+      item:
+        description: "Specific item id (e.g. t007#b2), or blank for the next unused"
+        required: false
+        default: ""
+      upload:
+        description: "Upload to YouTube (set false to build a preview artifact)"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+      publish_now:
+        description: "Publish immediately instead of at the peak slots"
+        required: false
+        default: "false"
+        type: choice
+        options: ["true", "false"]
+
+concurrency:
+  group: beyond-orbit-shorts
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  build-and-post:
+    runs-on: ubuntu-latest
+    # Three ~40s vertical renders plus dependency installation. Far cheaper than
+    # the documentary, but leave headroom for slow NASA downloads.
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Gate to the daily Shorts window (DST-safe, per-day dedupe)
+        id: gate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python - <<'PY'
+          import datetime, json, os
+          from zoneinfo import ZoneInfo
+
+          out = os.environ["GITHUB_OUTPUT"]
+          summary = os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null")
+
+          def emit(proceed, reason=""):
+              with open(out, "a") as f:
+                  f.write(f"proceed={'true' if proceed else 'false'}\n")
+              with open(summary, "a") as f:
+                  f.write(f"## Shorts gate: {'PROCEED' if proceed else 'SKIP'}\n\n")
+                  if reason:
+                      f.write(f"- {reason}\n")
+
+          if os.environ.get("EVENT_NAME") != "schedule":
+              print("Manual run -> proceed without claiming a slot.")
+              emit(True, "manual dispatch, gate bypassed")
+              raise SystemExit(0)
+
+          now = datetime.datetime.now(ZoneInfo("America/New_York"))
+          minutes = now.hour * 60 + now.minute
+
+          # One batch per day at ~10:30 AM ET. A generous catch-up window lets a
+          # delayed or swept run still post; if it runs late the publish slots
+          # simply shift to the next available peak (4 PM, 7 PM).
+          SLOT_MINUTES = 10 * 60 + 30
+          LEAD, CATCHUP = 10, 100
+
+          if not (SLOT_MINUTES - LEAD) <= minutes <= (SLOT_MINUTES + CATCHUP):
+              emit(False, f"ET now {now:%H:%M %Z} is outside the Shorts window "
+                          "(normal for the wrong-season DST twin cron)")
+              raise SystemExit(0)
+
+          # A dedicated state file: sharing schedule_state.json with the
+          # documentary workflow would let one wipe the other's claim when it
+          # resets the day.
+          today = now.strftime("%Y-%m-%d")
+          path = "shorts_schedule_state.json"
+          try:
+              with open(path) as f:
+                  state = json.load(f)
+          except Exception:
+              state = {}
+          if state.get("date") != today:
+              state = {"date": today, "done": []}
+          if "daily_shorts" in state.get("done", []):
+              emit(False, f"today's Shorts batch was already posted ({today})")
+              raise SystemExit(0)
+
+          state.setdefault("done", []).append("daily_shorts")
+          with open(path, "w") as f:
+              json.dump(state, f, indent=2)
+          print(f"ET {now:%H:%M %Z}: claimed the daily Shorts batch for {today}.")
+          emit(True, f"claimed the daily batch for {today} at {now:%H:%M %Z}")
+          PY
+
+      - name: Install system dependencies
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+
+      - name: Install Python dependencies
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build the Shorts
+        if: steps.gate.outputs.proceed == 'true'
+        env:
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: |
+          if [ -n "${{ github.event.inputs.item }}" ]; then
+            python generate_shorts.py --item "${{ github.event.inputs.item }}"
+          else
+            python generate_shorts.py --count "${{ github.event.inputs.count || '3' }}"
+          fi
+
+      - name: Upload preview artifact (only when upload=false)
+        if: ${{ steps.gate.outputs.proceed == 'true' && github.event_name == 'workflow_dispatch' && github.event.inputs.upload == 'false' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: shorts-preview
+          path: |
+            output/*_short_*.mp4
+            output/shorts_manifest.json
+          retention-days: 1
+          if-no-files-found: warn
+
+      - name: Upload to YouTube
+        if: ${{ steps.gate.outputs.proceed == 'true' && (github.event_name == 'schedule' || github.event.inputs.upload != 'false') }}
+        env:
+          YT_CLIENT_ID:     ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.publish_now }}" = "true" ]; then
+            python upload_shorts.py --now
+          else
+            python upload_shorts.py
+          fi
+
+      - name: Report results
+        if: ${{ always() && steps.gate.outputs.proceed == 'true' }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null")
+          lines = ["## Daily Shorts\n\n"]
+          p = Path("output/shorts_manifest.json")
+          if not p.exists():
+              lines.append("No Shorts manifest was produced — the build step "
+                           "failed. Check the build log above.\n")
+          else:
+              shorts = json.loads(p.read_text()).get("shorts", [])
+              if not shorts:
+                  lines.append("No Shorts were built.\n")
+              for s in shorts:
+                  head = s.get("heading", "?")
+                  vid = s.get("youtube_id")
+                  if vid:
+                      when = s.get("scheduled_publish_at") or "immediately"
+                      lines.append(f"- **{head}** ({s.get('item_id')}) -> "
+                                   f"https://youtu.be/{vid} — publishes `{when}`\n")
+                  else:
+                      lines.append(f"- **{head}** ({s.get('item_id')}) built but "
+                                   "NOT uploaded — see the upload log.\n")
+          with open(summary, "a") as f:
+              f.writelines(lines)
+          print("".join(lines))
+          PY
+
+      - name: Finalize rotation (retire only what uploaded)
+        if: ${{ always() && steps.gate.outputs.proceed == 'true' }}
+        run: python finalize_rotation.py
+
+      - name: Commit state
+        if: ${{ always() && steps.gate.outputs.proceed == 'true' }}
+        run: |
+          if [ -n "$(git status --porcelain rotation_state.json shorts_schedule_state.json)" ]; then
+            git config user.name  "beyond-orbit-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add rotation_state.json shorts_schedule_state.json 2>/dev/null || true
+            git commit -m "chore: shorts state update [skip ci]"
+            # Rebase onto any state the documentary workflow committed meanwhile,
+            # so the two schedules cannot clobber each other.
+            git pull --rebase --autostash origin ${{ github.ref_name }} || true
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "No state changes to commit."
+          fi
+
+      - name: Clean up old workflow runs
+        if: ${{ always() && steps.gate.outputs.proceed == 'true' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run list --repo "$GITHUB_REPOSITORY" \
+            --workflow "Beyond Orbit — Daily Shorts" --limit 100 \
+            --json databaseId --jq '.[].databaseId' \
+            | tail -n +11 \
+            | while read -r rid; do
+                gh run delete "$rid" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+                  && echo "deleted run $rid" || true
+              done
