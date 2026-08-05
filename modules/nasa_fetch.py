@@ -41,6 +41,7 @@ import json
 import random
 import re
 import urllib.parse
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence
@@ -152,8 +153,10 @@ def _get_json(url: str, params: Optional[Dict] = None,
         return None
 
     try:  # urllib fallback
-        import urllib.request
-
+        # NOTE: urllib.request is imported at MODULE level on purpose. Importing
+        # it here instead made `urllib` a local name for this whole function,
+        # so the urllib.parse.urlencode() call above raised UnboundLocalError
+        # before the import ever ran — which broke every NASA fetch.
         req = urllib.request.Request(url, headers=hdrs)
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read().decode("utf-8", errors="replace"))
@@ -568,8 +571,21 @@ def fetch_assets(queries: Sequence[str], want: Optional[int] = None,
 
     want = int(want or cfg("nasa.max_assets_per_video", 14))
     dest_dir = Path(dest_dir or CACHE_DIR)
-    dest_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        return _fetch_assets_inner(queries, want, dest_dir)
+    except Exception as exc:  # noqa: BLE001
+        # Footage trouble must never abort a whole video. The renderer already
+        # falls back to a generated starfield, but an exception escaping here
+        # skipped that entirely — an UnboundLocalError in the HTTP helper once
+        # killed every run this way. Degrade, do not die.
+        log.error("Footage fetch failed (%s: %s) — the renderer will fall back "
+                  "to a generated background.", type(exc).__name__, exc)
+        return []
 
+
+def _fetch_assets_inner(queries: Sequence[str], want: Optional[int],
+                        dest_dir: Optional[Path]) -> List[Asset]:
     sources = [str(s).lower() for s in (cfg("nasa.sources", ["images_api"]) or [])]
     prefer_video = bool(cfg("nasa.prefer_video", True))
     queries = [q for q in queries if str(q).strip()] or ["space"]

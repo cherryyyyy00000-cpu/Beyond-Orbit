@@ -191,6 +191,37 @@ async def _synth_chunk_async(text: str, out_path: Path, voice: str,
     return words
 
 
+def _estimate_timings(text: str, duration: float) -> List[Dict]:
+    """Synthesize plausible word timings when edge-tts reports none.
+
+    Some edge-tts versions return audio but emit no WordBoundary events. Without
+    a fallback that silently breaks three things at once — the .srt track, the
+    chapter timestamps and the Short window picker all read word timings — and it
+    fails as a warning rather than an error, so the run looks like it worked.
+
+    Words are spread across the measured duration in proportion to their length
+    (plus a fixed per-word cost), which tracks real speech far better than a flat
+    split and is easily good enough for caption grouping.
+    """
+    words = [w for w in str(text).split() if w]
+    if not words or duration <= 0:
+        return []
+
+    # Rough model: every word costs a fixed amount plus a per-character amount.
+    weights = [1.6 + len(w) for w in words]
+    total = float(sum(weights)) or 1.0
+
+    out: List[Dict] = []
+    t = 0.0
+    for w, weight in zip(words, weights):
+        span = duration * (weight / total)
+        out.append({"start": round(t, 3),
+                    "end": round(min(t + span * 0.92, duration), 3),
+                    "word": w})
+        t += span
+    return out
+
+
 def _synth_chunk(text: str, out_path: Path, voice: str, rate: str,
                  volume: str, pitch: str) -> Optional[List[Dict]]:
     """Synthesize one chunk with retries. Returns word timings, or None."""
@@ -257,6 +288,21 @@ def synthesize_blocks(
             part.unlink(missing_ok=True)
             continue
 
+        # Use the MEASURED duration, not the last word's end time — edge-tts
+        # leaves trailing silence, and ignoring it would make every subsequent
+        # chunk's timings drift progressively earlier.
+        dur = audio_duration(part)
+        if dur <= 0:
+            dur = (words[-1]["end"] if words else 0.0) + 0.25
+
+        # Some edge-tts versions return audio with NO WordBoundary events. Rather
+        # than let captions, chapters and the Shorts window picker all silently
+        # degrade, estimate the timings from the measured duration.
+        estimated = False
+        if not words:
+            words = _estimate_timings(chunk, dur)
+            estimated = bool(words)
+
         # Shift this chunk's timings onto the global timeline.
         for w in words:
             all_words.append({
@@ -265,15 +311,10 @@ def synthesize_blocks(
                 "word": w["word"],
             })
 
-        # Use the MEASURED duration, not the last word's end time — edge-tts
-        # leaves trailing silence, and ignoring it would make every subsequent
-        # chunk's timings drift progressively earlier.
-        dur = audio_duration(part)
-        if dur <= 0:
-            dur = (words[-1]["end"] if words else 0.0) + 0.25
         offset += dur
         part_paths.append(part)
-        log.info("  chunk %d/%d ok (%.1fs, %d words)", i, len(chunks), dur, len(words))
+        log.info("  chunk %d/%d ok (%.1fs, %d words%s)", i, len(chunks), dur,
+                 len(words), " estimated" if estimated else "")
 
     if not part_paths:
         log.error("Every narration chunk failed — check network access to "
@@ -291,6 +332,14 @@ def synthesize_blocks(
         return None, []
 
     total = audio_duration(out_path)
+    if not all_words:
+        # Last resort: estimate across the whole file. Returning no timings at
+        # all would leave the video with no captions, no chapters and no way to
+        # pick a Short window.
+        all_words = _estimate_timings(" ".join(chunks), total)
+        log.warning("edge-tts returned no word boundaries at all — timings were "
+                    "ESTIMATED from the audio duration (%d words). Captions and "
+                    "chapters will be approximate but present.", len(all_words))
     log.info("Narration ready: %s (%.1f min, %d word marks)",
              out_path.name, total / 60.0, len(all_words))
     return out_path, all_words
