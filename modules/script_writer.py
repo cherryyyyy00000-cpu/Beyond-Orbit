@@ -255,6 +255,11 @@ def _gemini_prompt(topic: Topic) -> str:
     min_w = int(cfg("script.min_words", 1500))
     max_w = int(cfg("script.max_words", 2200))
     loop_s = int(cfg("script.open_loop_every_seconds", 55))
+    n_sections = max(1, len(topic.beats))
+    # Models anchor far better on a per-section budget than on a total. Asking
+    # for "1500 words" produced 758; asking for "at least 250 words per section"
+    # gives the model a target it can actually track while writing.
+    per_section = max(120, int(min_w * 0.85 / n_sections))
     beats_json = json.dumps(
         [{"heading": b.heading, "points": b.points} for b in topic.beats],
         indent=2,
@@ -283,9 +288,15 @@ PROMISE TO THE VIEWER: {topic.promise}
 RESEARCH BEATS (cover all of them, in this order, one script section each):
 {beats_json}
 
-HARD REQUIREMENTS
-- Total narration between {min_w} and {max_w} words. This is the most important
-  constraint. Write full, flowing paragraphs, not bullet points.
+LENGTH — THE SINGLE MOST IMPORTANT CONSTRAINT
+- Total narration between {min_w} and {max_w} words.
+- Each of the {n_sections} sections must be AT LEAST {per_section} words on its
+  own. Count as you write. A section of 100 words is a failure.
+- To reach that length, go DEEPER, never wider: explain the mechanism step by
+  step, give the numbers and what they mean, name what is measured versus
+  inferred, state the competing explanation and why it is weaker, and say what
+  would change the answer. Do not pad with restatement or filler.
+- Write full, flowing spoken paragraphs. Not bullet points, not notes.
 - The FIRST sentence must be the cold open. No greeting, no channel name, no
   "welcome back", no "in today's video".
 - State the promise within roughly the first 40 words.
@@ -534,6 +545,136 @@ def _groq_script(topic: Topic) -> Optional[Script]:
     return None
 
 
+def _expansion_prompt(script: Script, topic: Topic) -> str:
+    """Ask a model to lengthen a script that came back too short."""
+    min_w = int(cfg("script.min_words", 1500))
+    n = max(1, len(script.sections))
+    per_section = max(150, int(min_w * 0.95 / n))
+    current = json.dumps(
+        {
+            "cold_open": script.cold_open,
+            "promise": script.promise,
+            "sections": [{"heading": s.heading, "text": s.text}
+                         for s in script.sections],
+            "outro": script.outro,
+        },
+        indent=2,
+    )
+    return f"""You are editing a documentary script for the YouTube channel
+"{cfg('channel.name', 'Beyond Orbit')}". The draft below is too short: it is
+{script.word_count} words and must be at least {min_w}.
+
+TOPIC: {topic.title}
+
+DRAFT:
+{current}
+
+Rewrite it LONGER. Rules:
+- Keep the same sections, in the same order, with the same headings.
+- Keep the cold open's meaning; you may sharpen the wording.
+- Every section must end up AT LEAST {per_section} words.
+- Add depth, never filler. For each section: explain the mechanism step by step,
+  give the numbers and what they mean, distinguish what is measured from what is
+  inferred, name the competing explanation and why it is weaker, and say what
+  observation would change the answer.
+- Do NOT invent facts, numbers, dates, names or missions. If something is
+  uncertain or disputed, say so explicitly. A space audience fact-checks in the
+  comments.
+- Do not repeat sentences or restate the same point in new words. If you cannot
+  legitimately extend a section, extend the others further instead.
+- Keep every open loop at the end of each section.
+- Spoken register, flowing paragraphs, no markdown, no stage directions, no emoji.
+
+Return ONLY valid JSON in exactly the same shape as the draft:
+{{"cold_open": "...", "promise": "...",
+  "sections": [{{"heading": "...", "text": "..."}}], "outro": "..."}}"""
+
+
+def _raw_completion(prompt: str) -> Optional[str]:
+    """Get one JSON completion from whichever writer is available.
+
+    Gemini first, then Groq — the same order as the initial write, so behaviour
+    stays predictable.
+    """
+    api_key = get_env("GEMINI_API_KEY")
+    if api_key:
+        try:
+            import google.generativeai as genai
+
+            genai.configure(api_key=api_key)
+            for name in _model_candidates(genai)[:2]:
+                try:
+                    resp = genai.GenerativeModel(name).generate_content(
+                        prompt,
+                        generation_config={
+                            "temperature": 0.8,
+                            "response_mime_type": "application/json",
+                            "max_output_tokens": 8192,
+                        },
+                    )
+                    text = (getattr(resp, "text", "") or "").strip()
+                    if text:
+                        return text
+                except Exception as exc:  # noqa: BLE001
+                    lowered = str(exc).lower()
+                    if ("quota exceeded for metric" in lowered
+                            or "denied access" in lowered
+                            or "check your plan and billing" in lowered):
+                        break   # project-level: no other Gemini model will work
+        except Exception:  # noqa: BLE001
+            pass
+
+    groq_key = get_env("GROQ_API_KEY")
+    if groq_key:
+        try:
+            import requests
+
+            for model in _GROQ_MODELS:
+                r = requests.post(
+                    _GROQ_URL,
+                    headers={"Authorization": f"Bearer {groq_key}",
+                             "Content-Type": "application/json"},
+                    json={"model": model,
+                          "messages": [{"role": "user", "content": prompt}],
+                          "temperature": 0.8, "max_tokens": 8000,
+                          "response_format": {"type": "json_object"}},
+                    timeout=180,
+                )
+                if r.status_code == 200:
+                    return (r.json()["choices"][0]["message"]["content"] or "").strip()
+                log.warning("Groq %s -> HTTP %s", model, r.status_code)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("Groq expansion call failed: %s", str(exc)[:200])
+    return None
+
+
+def _expand_script(script: Script, topic: Topic) -> Optional[Script]:
+    """One attempt at lengthening a short script.
+
+    Models routinely under-deliver on a total word count — Groq returned 758 words
+    against a 1,500 target. Rather than discard a genuinely good draft, hand it
+    back and ask for more depth. Only accepted if it actually comes back longer.
+    """
+    log.info("Script is %d words; asking for an expansion pass...",
+             script.word_count)
+    raw = _raw_completion(_expansion_prompt(script, topic))
+    if not raw:
+        log.warning("No writer available for the expansion pass.")
+        return None
+    expanded = _parse_script_json(raw)
+    if not expanded:
+        log.warning("Expansion pass returned unusable JSON.")
+        return None
+    if expanded.word_count <= script.word_count:
+        log.warning("Expansion pass came back no longer (%d -> %d words) — "
+                    "keeping the original.", script.word_count, expanded.word_count)
+        return None
+    log.info("Expansion pass: %d -> %d words (~%.1f min).",
+             script.word_count, expanded.word_count, expanded.estimated_minutes)
+    expanded.source = f"{script.source}+expanded"
+    return expanded
+
+
 def _parse_script_json(raw: str) -> Optional[Script]:
     """Parse and validate a model's JSON reply (Gemini or Groq)."""
     text = raw.strip()
@@ -597,8 +738,17 @@ def write_script(topic: Topic) -> Script:
             script = _groq_script(topic)
 
     if script is not None:
-        # Neither provider knows the ids; graft them on and repair anything left
-        # blank using the brief.
+        # Models routinely under-deliver on length: Groq returned 758 words
+        # against a 1,500 target. Give the draft one chance to grow before the
+        # publishable gate throws it away.
+        if script.word_count < int(cfg("script.min_words", 1500)) \
+                and bool(cfg("script.expand_short_scripts", True)):
+            better = _expand_script(script, topic)
+            if better:
+                script = better
+
+        # No provider knows the ids; graft them on and repair anything left blank
+        # using the brief.
         script.topic_id = topic.id
         script.title = topic.title
         if not script.cold_open:
