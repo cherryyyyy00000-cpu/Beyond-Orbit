@@ -348,18 +348,53 @@ def build_metadata(
                      thumbnail_hook=thumb_hook, source=source)
 
 
-def build_short_metadata(topic, parent_title: str,
-                         parent_video_id: Optional[str] = None) -> VideoMeta:
-    """Metadata for the vertical Short cut from a documentary.
+def _topic_keyword(topic, words: int = 4) -> str:
+    """A short searchable core of the topic title, e.g. 'Black Hole'."""
+    return _thumbnail_hook(topic.title, words).title()
 
-    The Short exists to drive discovery and subscriptions; its description points
-    back at the full video, so the two reinforce each other instead of competing.
+
+def build_short_metadata(topic, parent_title: str = "",
+                         parent_video_id: Optional[str] = None,
+                         heading: Optional[str] = None,
+                         hook: Optional[str] = None) -> VideoMeta:
+    """Metadata for one vertical Short.
+
+    The title and description are built from the specific BEAT, not the topic.
+    Deriving them from the topic alone gave every beat of a topic an identical
+    title and description — three Shorts from one documentary all shipped as
+    "Largest Object In The Universe Makes No Sense", which reads as duplicate
+    content to both viewers and YouTube even though the videos differ.
+
+    Args:
+        topic: the parent Topic (for keywords, tags and the CTA).
+        parent_title: fallback text if no beat hook is supplied.
+        parent_video_id: links the Short back to the full documentary.
+        heading: the beat's heading — the main source of a unique title.
+        hook: the beat's strongest line — used as the description opener.
     """
     suffix = str(cfg("shorts.title_suffix", "#shorts")).strip()
-    base = _thumbnail_hook(topic.title, 8).title()
+    keyword = _topic_keyword(topic)
+
+    # Countdown numbering ("2 - Something pulling our galaxy") is meaningless
+    # once a beat stands alone.
+    core = re.sub(r"^\s*\d+\s*[-\u2013\u2014:.]\s*", "", str(heading or "")).strip()
+    core = re.sub(r"\s*[-\u2013\u2014]\s*", ": ", core)
+
+    if core and len(core.split()) >= 3:
+        # Descriptive enough to lead with; add the topic keyword for search
+        # unless it is already implied.
+        base = core.title()
+        if keyword and keyword.lower() not in base.lower():
+            base = f"{base} | {keyword}"
+    elif core:
+        # Too terse on its own (e.g. "Spaghettification") — lead with the topic.
+        base = f"{keyword}: {core.title()}" if keyword else core.title()
+    else:
+        base = keyword or "Beyond Orbit"
+
     title = f"{base} {suffix}".strip()[:100]
 
-    lines = [topic.hook or parent_title]
+    lines = [hook or topic.hook or parent_title]
     if parent_video_id:
         lines.append(f"Full documentary: https://youtu.be/{parent_video_id}")
     else:

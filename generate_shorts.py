@@ -155,7 +155,12 @@ def produce_short(item, dry_run: bool = False) -> Optional[dict]:
 
     topic = get_topic_by_id(item.topic_id)
     if topic:
-        meta = meta_mod.build_short_metadata(topic, item.topic_title)
+        # Pass the BEAT's heading and hook so each Short gets a distinct title —
+        # deriving it from the topic alone made every beat share one title.
+        meta = meta_mod.build_short_metadata(
+            topic, item.topic_title,
+            heading=item.heading, hook=parts["hook"],
+        )
         title, description, tags = meta.title, meta.description, meta.tags
     else:
         suffix = str(cfg("shorts.title_suffix", "#shorts")).strip()

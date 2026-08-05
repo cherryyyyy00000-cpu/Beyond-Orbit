@@ -158,7 +158,7 @@ def check_gemini() -> bool:
     if forced:
         order = [forced] + [m for m in order if m != forced]
 
-    for name in (order or ["gemini-2.5-flash"])[:3]:
+    for name in (order or ["gemini-2.5-flash"])[:2]:
         try:
             model = genai.GenerativeModel(name)
             resp = model.generate_content(
@@ -173,18 +173,62 @@ def check_gemini() -> bool:
             warn(f"'{name}' returned an empty response.")
         except Exception as exc:  # noqa: BLE001
             msg = str(exc)
-            if any(k in msg.lower() for k in
-                   ("429", "quota", "exceeded", "rate limit", "resource_exhausted")):
-                bad(f"'{name}' is RATE-LIMITED / out of quota")
-                info(f"exact error: {msg[:260]}")
-                info("The free tier limits requests per minute AND per day.")
-                info("If this is a brand-new key, the usual causes are:")
-                info("  * the Generative Language API is not enabled for its project")
-                info("  * the key was made in a project with billing restrictions")
-                info("  * the free tier is unavailable in your region")
-                info("Try creating the key fresh at https://aistudio.google.com/apikey")
+            lowered = msg.lower()
+            if ("quota exceeded for metric" in lowered
+                    or "check your plan and billing" in lowered
+                    or "denied access" in lowered):
+                bad("Gemini is blocked at the PROJECT level")
+                info(f"exact error: {msg[:240]}")
+                info("Quota and access are granted per PROJECT, so no other")
+                info("Gemini model will work with this key either. Options:")
+                info("  * wait for the daily free quota to reset (~24h)")
+                info("  * create a key in a DIFFERENT Google Cloud project:")
+                info("      https://aistudio.google.com/apikey")
+                info("  * a 403 'denied access' usually means the project needs")
+                info("    billing enabled (the free tier still applies)")
+                info("  * check usage: https://ai.dev/rate-limit")
+                break
+            if any(k in lowered for k in ("429", "rate limit", "resource_exhausted")):
+                warn(f"'{name}' is rate-limited (may clear shortly): {msg[:180]}")
             else:
                 bad(f"'{name}' failed: {msg[:220]}")
+
+    # A second provider is what keeps a Gemini outage from stopping the channel.
+    if get_env("GROQ_API_KEY"):
+        info("GROQ_API_KEY is set — it will be used as the fallback writer.")
+        return _check_groq()
+    warn("No GROQ_API_KEY fallback configured",
+         "Gemini's free tier is per-project and per-day. When it runs out the "
+         "documentary is SKIPPED entirely, because the offline template is too\n"
+         "         short to publish. A free Groq key removes that single point "
+         "of failure: https://console.groq.com/keys")
+    return False
+
+
+def _check_groq() -> bool:
+    """Live-test the Groq fallback writer."""
+    try:
+        import requests
+    except ImportError:
+        bad("requests is not installed", "pip install -r requirements.txt")
+        return False
+    try:
+        r = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {get_env('GROQ_API_KEY')}",
+                     "Content-Type": "application/json"},
+            json={"model": "llama-3.3-70b-versatile",
+                  "messages": [{"role": "user", "content": "Reply with exactly: OK"}],
+                  "max_tokens": 8},
+            timeout=60,
+        )
+        if r.status_code == 200:
+            reply = r.json()["choices"][0]["message"]["content"].strip()
+            ok(f"Groq fallback works (replied {reply[:20]!r})")
+            return True
+        bad(f"Groq returned HTTP {r.status_code}: {r.text[:200]}")
+    except Exception as exc:  # noqa: BLE001
+        bad(f"Groq call failed: {str(exc)[:200]}")
     return False
 
 

@@ -110,8 +110,15 @@ So `script.min_publishable_minutes` (default 6) acts as a gate: a short script i
 | `YT_CLIENT_ID` | yes | |
 | `YT_CLIENT_SECRET` | yes | |
 | `YT_REFRESH_TOKEN` | yes | for the **Beyond Orbit** channel |
-| `GEMINI_API_KEY` | in practice yes | without it every topic is skipped |
+| `GEMINI_API_KEY` | in practice yes | without a writer every topic is skipped |
+| `GROQ_API_KEY` | strongly advised | free fallback writer — see below |
 | `PEXELS_API_KEY` | no | filler B-roll only |
+
+> **Set up the Groq fallback.** Gemini's free tier is per-project and per-day.
+> When it runs out, the documentary is **skipped entirely**, because the offline
+> template is too short to publish — so one exhausted quota means no upload that
+> day. Groq is tried automatically only when Gemini fails, and its free key takes
+> a minute: [console.groq.com/keys](https://console.groq.com/keys).
 
 > Keep the repository **public** for unlimited Actions minutes (private repos get
 > 2,000/month). Secrets are never stored in the repo, so this is safe.

@@ -314,13 +314,27 @@ Return ONLY valid JSON in exactly this shape:
 }}"""
 
 
-def _model_candidates(genai) -> List[str]:
-    """Model names to try, best first.
+# Models that technically advertise generateContent but cannot write a
+# documentary script. An earlier version tried EVERY model the API listed, which
+# meant burning quota on image, music, TTS and robotics models — 42 attempts per
+# run, each with a 20-second retry, taking over seven minutes to fail.
+_MODEL_EXCLUDE = (
+    "image", "imagen", "nano-banana",          # image generation
+    "tts", "audio", "lyria", "veo",            # audio / video generation
+    "embedding", "aqa",                        # embeddings / retrieval
+    "robotics", "computer-use",                # agentic control
+    "deep-research", "antigravity",            # research agents
+    "vision",                                  # vision-only variants
+)
+_MAX_MODELS_TRIED = 4
 
-    Model names get retired, and hardcoding one means the pipeline silently
-    degrades to 2-minute template scripts the day it disappears. So we ASK the
-    API which models exist and prefer the fast ones, falling back to a static
-    list only if discovery fails.
+
+def _model_candidates(genai) -> List[str]:
+    """Text-capable Gemini models to try, best first, capped in number.
+
+    Model names get retired, so the list is discovered from the API rather than
+    hardcoded — but it is then filtered to text models and capped, because trying
+    everything wastes the free-tier quota that the pipeline depends on.
     """
     forced = get_env("GEMINI_MODEL")
     out: List[str] = [forced] if forced else []
@@ -330,21 +344,41 @@ def _model_candidates(genai) -> List[str]:
         for m in genai.list_models():
             name = str(getattr(m, "name", "")).replace("models/", "")
             methods = getattr(m, "supported_generation_methods", []) or []
-            if name and "generateContent" in methods:
-                available.append(name)
-        # Prefer flash (fast + generous free tier), then anything else.
-        flash = sorted([n for n in available if "flash" in n], reverse=True)
-        rest = sorted([n for n in available if "flash" not in n], reverse=True)
-        out += flash + rest
+            if not name or "generateContent" not in methods:
+                continue
+            lowered = name.lower()
+            # Only mainline Gemini text models; gemma models return 403 on the
+            # free API tier.
+            if not lowered.startswith("gemini-"):
+                continue
+            if any(bad in lowered for bad in _MODEL_EXCLUDE):
+                continue
+            available.append(name)
+
+        # Prefer flash (fastest, most generous free tier), then pro. Within each
+        # group, deprioritise "lite" variants — they are cheaper but noticeably
+        # weaker at holding a 1,500-word structure — and prefer unversioned
+        # aliases over pinned builds, which get retired.
+        def rank(name: str):
+            n = name.lower()
+            return (
+                0 if "flash" in n else 1,       # flash first
+                1 if "lite" in n else 0,        # full model before lite
+                1 if re.search(r"-\d{3}$", n) else 0,   # alias before pinned build
+                1 if "preview" in n or "exp" in n else 0,
+                n,
+            )
+
+        out += sorted(available, key=rank)
         if available:
-            log.info("Gemini models available: %d (trying %s first)",
-                     len(available), (out[0] if out else "none"))
+            log.info("Gemini text models usable: %d (trying %s)",
+                     len(available), ", ".join((out or ["none"])[:_MAX_MODELS_TRIED]))
     except Exception as exc:  # noqa: BLE001
         log.warning("Could not list Gemini models (%s) — using a static list.", exc)
 
     out += ["gemini-2.5-flash", "gemini-flash-latest", "gemini-2.0-flash",
             "gemini-2.5-pro"]
-    return list(dict.fromkeys([m for m in out if m]))
+    return list(dict.fromkeys([m for m in out if m]))[:_MAX_MODELS_TRIED]
 
 
 def _gemini_script(topic: Topic) -> Optional[Script]:
@@ -364,6 +398,7 @@ def _gemini_script(topic: Topic) -> Optional[Script]:
     prompt = _gemini_prompt(topic)
     candidates = _model_candidates(genai)
     quota_hits = 0
+    fatal: Optional[str] = None
 
     for model_name in candidates:
         # The free tier limits requests PER MINUTE as well as per day, so a 429
@@ -384,7 +419,7 @@ def _gemini_script(topic: Topic) -> Optional[Script]:
                 if not raw:
                     log.warning("Gemini (%s) returned an empty response.", model_name)
                     break
-                parsed = _parse_gemini_json(raw)
+                parsed = _parse_script_json(raw)
                 if parsed:
                     log.info("Script written by Gemini (%s): %d words.",
                              model_name, parsed.word_count)
@@ -395,9 +430,26 @@ def _gemini_script(topic: Topic) -> Optional[Script]:
             except Exception as exc:  # noqa: BLE001
                 msg = str(exc)
                 lowered = msg.lower()
+
+                # PROJECT-level problems affect every model, because quota and
+                # access are granted per project, not per model. Trying the rest
+                # just burns time and requests — an earlier version spent seven
+                # minutes rediscovering the same 429 forty-two times.
+                project_blocked = (
+                    "quota exceeded for metric" in lowered
+                    or "check your plan and billing" in lowered
+                    or "denied access" in lowered
+                    or "billing" in lowered and "enable" in lowered
+                )
+                if project_blocked:
+                    log.error("Gemini is blocked at the PROJECT level, so no "
+                              "other model will work either: %s", msg[:260])
+                    fatal = msg
+                    break
+
+                # A per-minute rate limit, by contrast, usually clears on retry.
                 rate_limited = any(k in lowered for k in
-                                   ("429", "quota", "exceeded", "rate limit",
-                                    "resource_exhausted"))
+                                   ("429", "rate limit", "resource_exhausted"))
                 if rate_limited:
                     quota_hits += 1
                     if attempt == 1:
@@ -405,28 +457,85 @@ def _gemini_script(topic: Topic) -> Optional[Script]:
                                  model_name)
                         time.sleep(20)
                         continue
-                    # Log the REAL message. A previous version swallowed it and
-                    # just said "quota exhausted", which made a model-specific
-                    # problem look like an account-wide one.
-                    log.warning("Gemini %s rate-limited after retry: %s",
-                                model_name, msg[:300])
+                    log.warning("Gemini %s still rate-limited after retry: %s",
+                                model_name, msg[:260])
                 else:
-                    log.warning("Gemini %s failed: %s", model_name, msg[:300])
+                    log.warning("Gemini %s failed: %s", model_name, msg[:260])
                 break
+        if fatal:
+            break
 
-    if quota_hits:
+    if fatal:
         log.error(
-            "Every Gemini model was rate-limited (%d attempts). Check the key's "
-            "quota at https://aistudio.google.com/apikey and that the Generative "
-            "Language API is enabled for its project. Run `python verify_setup.py` "
-            "— it now makes a real Gemini call and prints the exact error.",
-            quota_hits,
+            "Gemini cannot be used with this key. The project is either out of "
+            "free-tier quota for the day or restricted.\n"
+            "  * check quota and usage:  https://ai.dev/rate-limit\n"
+            "  * or create a key in a DIFFERENT project: "
+            "https://aistudio.google.com/apikey\n"
+            "  * a 'denied access' 403 usually means the project needs billing "
+            "enabled (the free tier still applies) or is newly flagged.\n"
+            "Optionally set GROQ_API_KEY for a free fallback writer so a Gemini "
+            "outage does not stop the channel."
         )
+    elif quota_hits:
+        log.error("Every candidate Gemini model was rate-limited (%d attempts).",
+                  quota_hits)
     return None
 
 
-def _parse_gemini_json(raw: str) -> Optional[Script]:
-    """Parse and validate Gemini's JSON reply."""
+_GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+_GROQ_MODELS = ("llama-3.3-70b-versatile", "llama-3.1-8b-instant")
+
+
+def _groq_script(topic: Topic) -> Optional[Script]:
+    """Write the script with Groq instead of Gemini.
+
+    A second free provider means one project running out of quota does not stop
+    the channel. Groq's API is OpenAI-compatible and needs no extra dependency
+    beyond requests, which is already required.
+    """
+    api_key = get_env("GROQ_API_KEY")
+    if not api_key:
+        return None
+    try:
+        import requests
+    except ImportError:
+        return None
+
+    prompt = _gemini_prompt(topic)
+    for model in _GROQ_MODELS:
+        try:
+            resp = requests.post(
+                _GROQ_URL,
+                headers={"Authorization": f"Bearer {api_key}",
+                         "Content-Type": "application/json"},
+                json={
+                    "model": model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.85,
+                    "max_tokens": 8000,
+                    "response_format": {"type": "json_object"},
+                },
+                timeout=180,
+            )
+            if resp.status_code != 200:
+                log.warning("Groq %s -> HTTP %s: %s", model, resp.status_code,
+                            resp.text[:200])
+                continue
+            raw = (resp.json()["choices"][0]["message"]["content"] or "").strip()
+            parsed = _parse_script_json(raw)
+            if parsed:
+                log.info("Script written by Groq (%s): %d words.",
+                         model, parsed.word_count)
+                return parsed
+            log.warning("Groq %s returned unusable JSON.", model)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("Groq %s failed: %s", model, str(exc)[:200])
+    return None
+
+
+def _parse_script_json(raw: str) -> Optional[Script]:
+    """Parse and validate a model's JSON reply (Gemini or Groq)."""
     text = raw.strip()
     # Strip a ```json fence if the model added one despite the mime type.
     if text.startswith("```"):
@@ -480,22 +589,27 @@ def write_script(topic: Topic) -> Script:
     use_gemini = bool(cfg("topics.use_gemini", True))
     script: Optional[Script] = None
 
+    # Two providers, then templates. One project running out of free quota
+    # should not be able to stop the channel on its own.
     if use_gemini:
         script = _gemini_script(topic)
-        if script:
-            # Gemini does not know the ids; graft them on, and repair anything
-            # it left blank using the brief.
-            script.topic_id = topic.id
-            script.title = topic.title
-            if not script.cold_open:
-                script.cold_open = topic.hook
-            if not script.promise:
-                script.promise = topic.promise
+        if script is None:
+            script = _groq_script(topic)
 
-    if script is None:
+    if script is not None:
+        # Neither provider knows the ids; graft them on and repair anything left
+        # blank using the brief.
+        script.topic_id = topic.id
+        script.title = topic.title
+        if not script.cold_open:
+            script.cold_open = topic.hook
+        if not script.promise:
+            script.promise = topic.promise
+    else:
         script = _template_script(topic)
         if use_gemini:
-            log.info("Using the offline template script for %s.", topic.id)
+            log.info("Both writers unavailable — using the offline template "
+                     "script for %s.", topic.id)
 
     min_w = int(cfg("script.min_words", 1500))
     target = float(cfg("script.target_minutes", 12))
