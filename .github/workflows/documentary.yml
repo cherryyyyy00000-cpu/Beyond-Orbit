@@ -1,0 +1,291 @@
+name: Beyond Orbit — Documentary
+
+# WHY THE CRON LOOKS LIKE THIS
+#
+# GitHub's scheduler only understands UTC and does not follow US daylight saving,
+# so every US-Eastern slot needs TWO cron lines: one for EDT (UTC-4, summer) and
+# one for EST (UTC-5, winter). A gate step then checks the real
+# America/New_York clock and only proceeds in the correct window, so a post lands
+# at the intended Eastern time all year.
+#
+# The minutes are deliberately odd (:13, :41, :07) and never :00/:15/:30.
+# GitHub queues millions of jobs on the hour and heavily delays — or silently
+# DROPS — runs scheduled there. Off-peak minutes fire far more reliably.
+#
+# The job runs at ~9 AM ET so modules/youtube.py can upload the file as PRIVATE
+# and set publishAt to 2 PM ET. That five-hour head start lets YouTube finish
+# 1440p/4K processing BEFORE the video goes live — otherwise the most important
+# hour of its life is served at 360p.
+
+on:
+  schedule:
+    # ~9:00 AM ET on Thursday, Friday and Saturday
+    - cron: "13 13 * * 4,5,6"   # EDT (UTC-4)
+    - cron: "13 14 * * 4,5,6"   # EST (UTC-5)
+    # ---- CATCH-UP SWEEPS ------------------------------------------------
+    # GitHub frequently drops scheduled runs entirely. These later sweeps can
+    # still claim the day's slot; per-day dedupe in schedule_state.json means a
+    # recovered run can never double-post.
+    - cron: "41 14 * * 4,5,6"   # ~10:41 AM EDT
+    - cron: "41 15 * * 4,5,6"   # ~10:41 AM EST
+    - cron: "7 16 * * 4,5,6"    # ~12:07 PM EDT
+    - cron: "7 17 * * 4,5,6"    # ~12:07 PM EST
+
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Specific topic id (e.g. t007), or blank for the next unused"
+        required: false
+        default: ""
+      resolution:
+        description: "Render resolution"
+        required: false
+        default: "1440p"
+        type: choice
+        options: ["1080p", "1440p", "4k"]
+      upload:
+        description: "Upload to YouTube? (false = build a preview artifact only)"
+        required: false
+        default: "false"
+        type: choice
+        options: ["true", "false"]
+      publish_now:
+        description: "Publish immediately instead of scheduling for 2 PM ET"
+        required: false
+        default: "false"
+        type: choice
+        options: ["true", "false"]
+
+concurrency:
+  group: beyond-orbit-documentary
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # commit rotation/schedule state
+  actions: write    # let the cleanup step delete old runs
+
+jobs:
+  build-and-post:
+    runs-on: ubuntu-latest
+    # A 12-minute 1440p render is roughly 20-40 minutes of encoding on a runner
+    # with no GPU. 4K is considerably slower. The hard platform ceiling is 6
+    # hours, so we stop at 5 to fail loudly rather than being killed mid-upload.
+    timeout-minutes: 300
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Decide whether THIS scheduled run is inside a real posting window.
+      # Manual runs always proceed and never touch the state file.
+      - name: Gate to USA Eastern posting window (DST-safe, per-day dedupe)
+        id: gate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python - <<'PY'
+          import datetime, json, os
+          from zoneinfo import ZoneInfo
+
+          out = os.environ["GITHUB_OUTPUT"]
+          summary = os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null")
+
+          def emit(proceed, slot="", reason=""):
+              with open(out, "a") as f:
+                  f.write(f"proceed={'true' if proceed else 'false'}\n")
+                  f.write(f"slot={slot}\n")
+              with open(summary, "a") as f:
+                  f.write(f"## Gate: {'PROCEED' if proceed else 'SKIP'}\n\n")
+                  if slot:
+                      f.write(f"- slot: `{slot}`\n")
+                  if reason:
+                      f.write(f"- {reason}\n")
+
+          if os.environ.get("EVENT_NAME") != "schedule":
+              print("Manual run -> proceed without claiming a slot.")
+              emit(True, "manual", "manual dispatch, gate bypassed")
+              raise SystemExit(0)
+
+          now = datetime.datetime.now(ZoneInfo("America/New_York"))
+          minutes = now.hour * 60 + now.minute
+
+          # One posting slot per publish day, at ~9 AM ET. The window stays open
+          # for three hours so a delayed or swept run can still claim it; if it
+          # runs late, next_publish_time() simply picks the next 2 PM slot.
+          SLOT_MINUTES = 9 * 60
+          LEAD, CATCHUP = 5, 180
+          PUBLISH_WEEKDAYS = {3, 4, 5}   # Thu, Fri, Sat
+
+          if now.weekday() not in PUBLISH_WEEKDAYS:
+              emit(False, "", f"{now:%a %H:%M %Z} is not a publish day")
+              raise SystemExit(0)
+          if not (SLOT_MINUTES - LEAD) <= minutes <= (SLOT_MINUTES + CATCHUP):
+              emit(False, "", f"ET now {now:%H:%M %Z} is outside the posting "
+                              "window (normal for the wrong-season DST twin cron)")
+              raise SystemExit(0)
+
+          today = now.strftime("%Y-%m-%d")
+          try:
+              with open("schedule_state.json") as f:
+                  state = json.load(f)
+          except Exception:
+              state = {}
+          if state.get("date") != today:
+              state = {"date": today, "done": []}
+          if "slot_0900" in state.get("done", []):
+              emit(False, "", f"today's slot was already posted ({state['done']})")
+              raise SystemExit(0)
+
+          # Claim it now so a DST twin or a delayed retry cannot double-post.
+          state.setdefault("done", []).append("slot_0900")
+          with open("schedule_state.json", "w") as f:
+              json.dump(state, f, indent=2)
+          print(f"ET {now:%H:%M %Z}: claimed slot_0900 for {today}.")
+          emit(True, "slot_0900", f"claimed `slot_0900` for {today} at {now:%H:%M %Z}")
+          PY
+
+      - name: Install system dependencies
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+
+      - name: Install Python dependencies
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify setup (diagnostic, non-blocking)
+        if: steps.gate.outputs.proceed == 'true'
+        continue-on-error: true
+        env:
+          YT_CLIENT_ID:     ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          GEMINI_API_KEY:   ${{ secrets.GEMINI_API_KEY }}
+          PEXELS_API_KEY:   ${{ secrets.PEXELS_API_KEY }}
+        run: python verify_setup.py
+
+      - name: Build the documentary
+        if: steps.gate.outputs.proceed == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          BO_RESOLUTION:  ${{ github.event.inputs.resolution || '1440p' }}
+        run: |
+          if [ -n "${{ github.event.inputs.topic }}" ]; then
+            python generate.py --topic "${{ github.event.inputs.topic }}"
+          else
+            python generate.py
+          fi
+
+      # On a manual run you can download and review the video here (the run page
+      # -> Artifacts) without it ever being posted. Retention is 1 day so it does
+      # not eat the free Actions storage allowance.
+      - name: Upload preview artifact (manual runs only)
+        if: ${{ steps.gate.outputs.proceed == 'true' && github.event_name == 'workflow_dispatch' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentary-preview
+          path: |
+            output/*.mp4
+            output/*.jpg
+            output/*.srt
+            output/manifest.json
+          retention-days: 1
+          if-no-files-found: warn
+
+      - name: Upload to YouTube
+        if: ${{ steps.gate.outputs.proceed == 'true' && (github.event_name == 'schedule' || github.event.inputs.upload == 'true') }}
+        env:
+          YT_CLIENT_ID:     ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.publish_now }}" = "true" ]; then
+            python upload_youtube.py --limit 1 --now
+          else
+            python upload_youtube.py --limit 1
+          fi
+
+      - name: Report results
+        if: ${{ always() && steps.gate.outputs.proceed == 'true' }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null")
+          lines = ["## Beyond Orbit results\n\n"]
+          p = Path("output/manifest.json")
+          if not p.exists():
+              lines.append("No manifest was produced — the build step failed. "
+                           "The most common cause is a missing `GEMINI_API_KEY`: "
+                           "without it scripts are only ~2-3 minutes, which is "
+                           "under the publishable floor, so every topic is "
+                           "skipped. Check the build log above.\n")
+          else:
+              vids = json.loads(p.read_text()).get("videos", [])
+              if not vids:
+                  lines.append("The manifest is empty — no video was built.\n")
+              for v in vids:
+                  title = v.get("title", "?")
+                  vid = v.get("youtube_id")
+                  if vid:
+                      when = v.get("scheduled_publish_at") or "immediately"
+                      lines.append(f"### {title}\n")
+                      lines.append(f"- video: https://youtu.be/{vid}\n")
+                      lines.append(f"- publishes: `{when}`\n")
+                      lines.append(f"- length: {v.get('duration_seconds', 0) / 60:.1f} min "
+                                   f"| {v.get('dimensions')} | script: {v.get('script_source')}\n")
+                      for s in (v.get("shorts") or []):
+                          if s.get("youtube_id"):
+                              lines.append(f"- short: https://youtu.be/{s['youtube_id']} "
+                                           f"(`{s.get('scheduled_publish_at') or 'immediately'}`)\n")
+                  else:
+                      lines.append(f"### {title}\n- built but NOT uploaded — see "
+                                   "the upload step log.\n")
+          with open(summary, "a") as f:
+              f.writelines(lines)
+          print("".join(lines))
+          PY
+
+      - name: Finalize rotation (mark used only for uploads that succeeded)
+        if: ${{ always() && steps.gate.outputs.proceed == 'true' }}
+        run: python finalize_rotation.py
+
+      - name: Commit state
+        if: ${{ always() && steps.gate.outputs.proceed == 'true' }}
+        run: |
+          if [ -n "$(git status --porcelain rotation_state.json schedule_state.json)" ]; then
+            git config user.name  "beyond-orbit-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add rotation_state.json schedule_state.json 2>/dev/null || true
+            git commit -m "chore: state update [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "No state changes to commit."
+          fi
+
+      # Rendered videos are never committed (they are git-ignored and the runner
+      # is wiped after each job), so the only thing that accumulates is old run
+      # logs. Trimming them keeps the free Actions storage from filling up.
+      - name: Clean up old workflow runs
+        if: ${{ always() && steps.gate.outputs.proceed == 'true' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run list --repo "$GITHUB_REPOSITORY" --limit 100 \
+            --json databaseId --jq '.[].databaseId' \
+            | tail -n +11 \
+            | while read -r rid; do
+                gh run delete "$rid" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+                  && echo "deleted run $rid" || true
+              done
