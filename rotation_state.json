@@ -3,13 +3,15 @@
     "t001",
     "t002",
     "t003",
-    "t004"
+    "t004",
+    "t005"
   ],
   "used_titles": [
     "What If You Fell Into a Black Hole? \u2014 Step By Step",
     "The Largest Object in the Universe Makes No Sense",
     "What Is at the Edge of the Universe?",
-    "7 Places in Space That Should Not Exist (Ranked)"
+    "7 Places in Space That Should Not Exist (Ranked)",
+    "The Signal From Space Nobody Can Explain \u2014 Still Unexplained"
   ],
   "used_short_ids": [
     "t001#b0",
@@ -28,6 +30,6 @@
     "t002#b4",
     "t003#b4"
   ],
-  "updated_at": "2026-08-09T15:59:49.352975+00:00",
+  "updated_at": "2026-08-15T14:12:13.010949+00:00",
   "comment": "Seeded by hand to recover the state from run 31030285358. That run built and uploaded three Shorts successfully, but its 'Commit state' step failed (git add aborted on a missing pathspec and staged nothing), so this file was never committed. Without it the next run would have rebuilt and re-uploaded the same three items. Uploaded: t001#b0 -> U14Byb8YzC4, t002#b0 -> C2FZwa3cwOM, t003#b0 -> 6GcPCsIE40E. This comment key is ignored by the loader and can be deleted."
 }
