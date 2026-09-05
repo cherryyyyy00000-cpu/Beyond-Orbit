@@ -81,8 +81,11 @@
     "t014#b0",
     "t012#b4",
     "t013#b1",
-    "t014#b1"
+    "t014#b1",
+    "t013#b2",
+    "t014#b2",
+    "t015#b0"
   ],
-  "updated_at": "2026-09-04T14:37:09.706804+00:00",
+  "updated_at": "2026-09-05T14:33:54.443457+00:00",
   "comment": "Seeded by hand to recover the state from run 31030285358. That run built and uploaded three Shorts successfully, but its 'Commit state' step failed (git add aborted on a missing pathspec and staged nothing), so this file was never committed. Without it the next run would have rebuilt and re-uploaded the same three items. Uploaded: t001#b0 -> U14Byb8YzC4, t002#b0 -> C2FZwa3cwOM, t003#b0 -> 6GcPCsIE40E. This comment key is ignored by the loader and can be deleted."
 }
